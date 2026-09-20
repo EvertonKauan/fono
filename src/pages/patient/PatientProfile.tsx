@@ -15,6 +15,7 @@ import AnamneseTab from './tabs/AnamneseTab.tsx'
 import DadosTab from './tabs/DadosTab.tsx'
 import FinanceiroTab from './tabs/FinanceiroTab.tsx'
 import PrescricoesTab from './tabs/PrescricoesTab.tsx'
+import RelatorioTab from './tabs/RelatorioTab.tsx'
 import { hasPending } from './tabs/financeiro.ts'
 
 const TABS = [
@@ -97,9 +98,7 @@ export default function PatientProfile() {
             onPaymentsChange={setPayments}
           />
         )}
-        {tab === 'relatorio' && (
-          <Typography color="text.secondary">Esta seção ainda não está disponível.</Typography>
-        )}
+        {tab === 'relatorio' && <RelatorioTab patient={patient} payments={payments} />}
       </Box>
     </Stack>
   )

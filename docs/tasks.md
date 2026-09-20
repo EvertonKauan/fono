@@ -29,7 +29,7 @@ Ordem de execução. Cada tarefa entrega o menor incremento utilizável e cita a
 - [x] **T16** `PrintSheet` (portal, `afterprint`, estilos `@media print` A4). *(RF-07, RF-09)*
 - [x] **T17** `PrescricoesTab`: lista, criar/editar com exercícios dinâmicos, frequência. *(RF-07)*
 - [x] **T18** Impressão da prescrição no formato do exemplo, com assinatura do tenant. *(RF-07)*
-- [ ] **T19** `RelatorioTab`: seleção de seções, pré-visualização e Imprimir. *(RF-09)*
+- [x] **T19** `RelatorioTab`: seleção de seções, pré-visualização e Imprimir. *(RF-09)*
 
 ## M5 — Fechamento
 - [ ] **T20** Passada de acabamento visual (densidade, estados vazios, mensagens de erro em pt-BR).
