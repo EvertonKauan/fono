@@ -11,9 +11,9 @@ Ordem de execução. Cada tarefa entrega o menor incremento utilizável e cita a
 ## M1 — Acesso e lista
 - [x] **T05** Login mockado (`clau` / `123`), `SessionProvider`, `RequireAuth`, sair. *(RF-01)*
 - [x] **T06** `AppLayout` (topo com nome da clínica e Sair) e rotas. *(RF-01)*
-- [ ] **T07** `services/patients.ts` e `payments.ts` (listar/criar/atualizar, sempre por `tenantId`). *(RF-10)*
-- [ ] **T08** `PatientsPage`: DataGrid, busca, filtros e `PaymentChip`. *(RF-02)*
-- [ ] **T09** `NewPatientDialog` com sugestão de tipo pela idade; salvar e abrir o perfil. *(RF-03)*
+- [x] **T07** `services/patients.ts` e `payments.ts` (listar/criar/atualizar, sempre por `tenantId`). *(RF-10)*
+- [x] **T08** `PatientsPage`: DataGrid, busca, filtros e `PaymentChip`. *(RF-02)*
+- [x] **T09** `NewPatientDialog` com sugestão de tipo pela idade; salvar e abrir o perfil. *(RF-03)*
 
 ## M2 — Perfil
 - [ ] **T10** `PatientProfile` + `PatientHeader` + `Tabs` ligadas à query `?aba=`. *(RF-04)*

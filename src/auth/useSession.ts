@@ -14,3 +14,10 @@ export function useSession() {
   if (!value) throw new Error('useSession deve ser usado dentro de SessionProvider.')
   return value
 }
+
+// para telas protegidas por RequireAuth, onde a sessão sempre existe
+export function useTenantId() {
+  const { session } = useSession()
+  if (!session) throw new Error('Sessão ausente em tela protegida.')
+  return session.tenantId
+}
