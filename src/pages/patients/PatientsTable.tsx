@@ -1,7 +1,6 @@
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import Link from '@mui/material/Link'
-import Typography from '@mui/material/Typography'
-import { DataGrid, GridOverlay, type GridColDef } from '@mui/x-data-grid'
+import { DataGrid, type GridColDef } from '@mui/x-data-grid'
 import PaymentChip from '../../components/PaymentChip.tsx'
 import { formatAge, formatCurrency } from '../../utils/format.ts'
 import type { PatientRow } from './patientRows.ts'
@@ -56,14 +55,6 @@ const columns: GridColDef<PatientRow>[] = [
   { field: 'phone', headerName: 'Telefone', width: 135 },
 ]
 
-function NoPatients() {
-  return (
-    <GridOverlay>
-      <Typography color="text.secondary">Nenhum paciente encontrado.</Typography>
-    </GridOverlay>
-  )
-}
-
 export default function PatientsTable({ rows, loading }: { rows: PatientRow[]; loading: boolean }) {
   const navigate = useNavigate()
 
@@ -76,7 +67,6 @@ export default function PatientsTable({ rows, loading }: { rows: PatientRow[]; l
       disableColumnMenu
       disableRowSelectionOnClick
       onRowClick={({ row }) => navigate(`/pacientes/${row.id}`)}
-      slots={{ noRowsOverlay: NoPatients }}
       initialState={{
         sorting: { sortModel: [{ field: 'fullName', sort: 'asc' }] },
         pagination: { paginationModel: { pageSize: 25 } },

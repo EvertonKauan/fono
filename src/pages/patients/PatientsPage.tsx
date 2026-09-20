@@ -57,7 +57,7 @@ export default function PatientsPage() {
         </Button>
       </Stack>
 
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ sm: 'center' }}>
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1.5, sm: 2 }} alignItems={{ sm: 'center' }}>
         <TextField
           label="Buscar por nome"
           name="busca"
@@ -75,28 +75,31 @@ export default function PatientsPage() {
             },
           }}
         />
-        <TextField
-          select
-          label="Tipo"
-          name="tipo"
-          value={filters.kind}
-          onChange={(event) => setFilters({ ...filters, kind: event.target.value as PatientFilters['kind'] })}
-          sx={{ minWidth: { sm: 150 } }}
-        >
-          <MenuItem value="todos">Todos</MenuItem>
-          <MenuItem value="crianca">Criança</MenuItem>
-          <MenuItem value="adulto">Adulto</MenuItem>
-        </TextField>
-        <FormControlLabel
-          label="Pagamento pendente"
-          control={
-            <Checkbox
-              name="pendentes"
-              checked={filters.onlyPending}
-              onChange={(event) => setFilters({ ...filters, onlyPending: event.target.checked })}
-            />
-          }
-        />
+        <Stack direction="row" alignItems="center" spacing={2}>
+          <TextField
+            select
+            label="Tipo"
+            name="tipo"
+            value={filters.kind}
+            onChange={(event) => setFilters({ ...filters, kind: event.target.value as PatientFilters['kind'] })}
+            sx={{ minWidth: 130, flex: { xs: 1, sm: 'none' } }}
+          >
+            <MenuItem value="todos">Todos</MenuItem>
+            <MenuItem value="crianca">Criança</MenuItem>
+            <MenuItem value="adulto">Adulto</MenuItem>
+          </TextField>
+          <FormControlLabel
+            label="Pagamento pendente"
+            sx={{ mr: 0 }}
+            control={
+              <Checkbox
+                name="pendentes"
+                checked={filters.onlyPending}
+                onChange={(event) => setFilters({ ...filters, onlyPending: event.target.checked })}
+              />
+            }
+          />
+        </Stack>
       </Stack>
 
       {data && (
@@ -104,10 +107,16 @@ export default function PatientsPage() {
           {rows.length === 1 ? '1 paciente' : `${rows.length} pacientes`}
         </Typography>
       )}
-      {isDesktop ? (
+      {data && rows.length === 0 ? (
+        <Typography color="text.secondary">
+          {data.patients.length === 0
+            ? 'Nenhum paciente cadastrado. Use “Novo paciente” para começar.'
+            : 'Nenhum paciente encontrado com esses filtros.'}
+        </Typography>
+      ) : isDesktop ? (
         <PatientsTable rows={rows} loading={data === null} />
       ) : (
-        data && (rows.length ? <PatientCards rows={rows} /> : <Typography>Nenhum paciente encontrado.</Typography>)
+        data && <PatientCards rows={rows} />
       )}
 
       <NewPatientDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />

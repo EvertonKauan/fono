@@ -59,7 +59,7 @@ export default function PrescricoesTab({ patient }: { patient: Patient }) {
       </Stack>
 
       {prescriptions.length === 0 ? (
-        <Typography color="text.secondary">Nenhuma prescrição cadastrada.</Typography>
+        <Typography color="text.secondary">Nenhuma prescrição cadastrada. Use “Nova prescrição” para criar a primeira.</Typography>
       ) : (
         <Paper component="ul" role="list" sx={{ listStyle: 'none', m: 0, p: 0 }}>
           {prescriptions.map((prescription, index) => (

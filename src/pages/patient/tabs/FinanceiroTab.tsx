@@ -169,7 +169,11 @@ export default function FinanceiroTab({ patient, payments, onPatientSaved, onPay
           </Paper>
         </Box>
 
-        <PaymentsList payments={yearPayments} onMarkPaid={setPaying} onUndo={undo} />
+        {payments.length === 0 ? (
+          <Typography color="text.secondary">Nenhum lançamento cadastrado. Use “Novo lançamento” para começar.</Typography>
+        ) : (
+          <PaymentsList year={year} payments={yearPayments} onMarkPaid={setPaying} onUndo={undo} />
+        )}
       </Box>
 
       {creating && <NewPaymentDialog patient={patient} onClose={() => setCreating(false)} onCreated={created} />}

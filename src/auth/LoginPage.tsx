@@ -19,12 +19,15 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [failed, setFailed] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
   if (session) return <Navigate to="/pacientes" replace />
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
+    setSubmitted(true)
+    if (!username.trim() || !password) return
     setSubmitting(true)
     setFailed(!(await login(username.trim(), password)))
     setSubmitting(false)
@@ -38,7 +41,7 @@ export default function LoginPage() {
       <Typography color="text.secondary" sx={{ mb: 3 }}>
         Sistema da Clínica de Fonoaudiologia
       </Typography>
-      <Paper component="form" onSubmit={handleSubmit} sx={{ p: { xs: 2, sm: 3 } }}>
+      <Paper component="form" noValidate onSubmit={handleSubmit} sx={{ p: { xs: 2, sm: 3 } }}>
         <Stack spacing={2}>
           {failed && <Alert severity="error">Usuário ou senha inválidos.</Alert>}
           <TextField
@@ -49,6 +52,8 @@ export default function LoginPage() {
             onChange={(event) => setUsername(event.target.value)}
             required
             fullWidth
+            error={submitted && !username.trim()}
+            helperText={submitted && !username.trim() ? 'Informe o usuário.' : undefined}
             slotProps={{
               htmlInput: { autoComplete: 'username', autoCapitalize: 'none', spellCheck: false },
             }}
@@ -62,6 +67,8 @@ export default function LoginPage() {
             onChange={(event) => setPassword(event.target.value)}
             required
             fullWidth
+            error={submitted && !password}
+            helperText={submitted && !password ? 'Informe a senha.' : undefined}
             slotProps={{
               htmlInput: { autoComplete: 'current-password' },
               input: {

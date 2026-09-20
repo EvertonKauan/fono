@@ -19,8 +19,16 @@ export default function AppLayout() {
             <Typography variant="h6" component="p" noWrap sx={{ flexGrow: 1 }}>
               {session?.tenant.name}
             </Typography>
-            <Button color="inherit" startIcon={<Logout />} onClick={logout}>
-              Sair
+            <Button
+              color="inherit"
+              startIcon={<Logout />}
+              onClick={logout}
+              aria-label="Sair"
+              sx={{ minWidth: 0, '& .MuiButton-startIcon': { mr: { xs: 0, sm: 1 }, ml: { xs: 0, sm: -0.5 } } }}
+            >
+              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                Sair
+              </Box>
             </Button>
           </Toolbar>
         </Container>

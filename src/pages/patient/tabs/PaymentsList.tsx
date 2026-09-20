@@ -17,6 +17,7 @@ import type { Payment } from '../../../types/domain.ts'
 import { formatCurrency, formatDate, formatPeriod, methodLabel } from '../../../utils/format.ts'
 
 type Props = {
+  year: number
   payments: Payment[]
   onMarkPaid: (payment: Payment) => void
   onUndo: (payment: Payment) => void
@@ -25,7 +26,7 @@ type Props = {
 const paidOn = (payment: Payment) => (payment.paidAt ? formatDate(payment.paidAt) : '—')
 const methodOf = (payment: Payment) => (payment.method ? methodLabel[payment.method] : '—')
 
-function Action({ payment, onMarkPaid, onUndo }: { payment: Payment } & Omit<Props, 'payments'>) {
+function Action({ payment, onMarkPaid, onUndo }: { payment: Payment } & Pick<Props, 'onMarkPaid' | 'onUndo'>) {
   return payment.status === 'pendente' ? (
     <Button
       size="small"
@@ -42,10 +43,10 @@ function Action({ payment, onMarkPaid, onUndo }: { payment: Payment } & Omit<Pro
   )
 }
 
-export default function PaymentsList({ payments, onMarkPaid, onUndo }: Props) {
+export default function PaymentsList({ year, payments, onMarkPaid, onUndo }: Props) {
   const isDesktop = useMediaQuery(useTheme().breakpoints.up('md'))
 
-  if (payments.length === 0) return <Typography color="text.secondary">Nenhum lançamento neste ano.</Typography>
+  if (payments.length === 0) return <Typography color="text.secondary">Nenhum lançamento em {year}.</Typography>
 
   if (isDesktop) {
     return (

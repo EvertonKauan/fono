@@ -32,9 +32,9 @@ Ordem de execução. Cada tarefa entrega o menor incremento utilizável e cita a
 - [x] **T19** `RelatorioTab`: seleção de seções, pré-visualização e Imprimir. *(RF-09)*
 
 ## M5 — Fechamento
-- [ ] **T20** Passada de acabamento visual (densidade, estados vazios, mensagens de erro em pt-BR).
-- [ ] **T21** Verificação manual de todos os critérios de aceite da spec e do isolamento entre tenants. *(RF-10)*
-- [ ] **T22** Verificação responsiva: lista (cartões em `xs/sm`, tabela a partir de `md`), abas roláveis, Dialog em tela cheia no celular, formulários sem overflow horizontal. *(RNF responsivo)*
+- [x] **T20** Passada de acabamento visual (densidade, estados vazios, mensagens de erro em pt-BR).
+- [x] **T21** Verificação manual de todos os critérios de aceite da spec e do isolamento entre tenants. *(RF-10)*
+- [x] **T22** Verificação responsiva: lista (cartões em `xs/sm`, tabela a partir de `md`), abas roláveis, Dialog em tela cheia no celular, formulários sem overflow horizontal. *(RNF responsivo)*
 
 ## Fase 2 (fora deste documento)
 Back-end e banco de dados; troca do miolo de `services/` por HTTP; autenticação real; emissão do recibo anual em PDF; agenda.

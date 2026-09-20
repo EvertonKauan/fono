@@ -17,7 +17,7 @@ type Props = {
 }
 
 const subtitle = { fontSize: '12pt', mt: 2, mb: 0.75, breakAfter: 'avoid' } as const
-const empty = <Typography sx={{ fontSize: 'inherit' }}>Nada registrado.</Typography>
+const empty = <Typography sx={{ fontSize: 'inherit' }}>Nenhum lançamento registrado.</Typography>
 
 // Mesmo documento na pré-visualização e na impressão; cada seção depois da primeira começa em página nova.
 export default function ReportDocument({ patient, tenant, payments, anamnese, prescriptions, include, issuedOn }: Props) {
@@ -157,7 +157,7 @@ function FinanceiroSection({ patient, payments }: { patient: Patient; payments: 
             <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', '& th': { fontWeight: 600 } }}>
               <thead>
                 <tr>
-                  {['Competência', 'Sessões', 'Valor', 'Situação', 'Data do pagamento', 'Forma'].map((label) => (
+                  {['Competência', 'Sessões', 'Valor', 'Status', 'Data do pagamento', 'Forma'].map((label) => (
                     <Box component="th" scope="col" key={label} sx={cell}>
                       {label}
                     </Box>
