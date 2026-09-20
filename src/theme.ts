@@ -77,6 +77,15 @@ export const theme = createTheme(
           }),
         },
       },
+      MuiAccordion: {
+        defaultProps: { disableGutters: true },
+        styleOverrides: {
+          root: {
+            '&:not(:last-of-type)': { borderBottomWidth: 0 },
+            '&::before': { display: 'none' },
+          },
+        },
+      },
       MuiButton: { defaultProps: { disableElevation: true } },
       MuiTextField: { defaultProps: { size: 'small' } },
       MuiDataGrid: {

@@ -1,9 +1,13 @@
+import dayjs from 'dayjs'
 import type { PatientKind, PaymentMethod } from '../types/domain.ts'
 
 const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
 
 // yyyy-mm-dd → dd/mm/aaaa
 export const formatDate = (iso: string) => iso.slice(0, 10).split('-').reverse().join('/')
+
+// instante ISO → dd/mm/aaaa às HH:mm, no fuso local
+export const formatDateTime = (iso: string) => dayjs(iso).format('DD/MM/YYYY [às] HH:mm')
 
 export const formatCurrency = (value: number) => brl.format(value)
 
