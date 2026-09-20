@@ -1,6 +1,6 @@
 # Fono — Sistema da Clínica de Fonoaudiologia
 
-Fase 1: front-end com dados mockados (`localStorage`). A documentação do projeto está em [docs/](docs/): `constitution.md`, `spec.md`, `plan.md`, `tasks.md`.
+Fase 1: front-end com dados mockados (`localStorage`). A documentação do projeto está em [docs/](docs/): `constitution.md`, `spec.md`, `plan.md`, `tasks.md`. Limitações conhecidas da Fase 1: [docs/known-issues.md](docs/known-issues.md).
 
 ## Scripts
 
