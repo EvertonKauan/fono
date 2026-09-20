@@ -14,6 +14,7 @@ import PatientHeader from './PatientHeader.tsx'
 import AnamneseTab from './tabs/AnamneseTab.tsx'
 import DadosTab from './tabs/DadosTab.tsx'
 import FinanceiroTab from './tabs/FinanceiroTab.tsx'
+import PrescricoesTab from './tabs/PrescricoesTab.tsx'
 import { hasPending } from './tabs/financeiro.ts'
 
 const TABS = [
@@ -87,6 +88,7 @@ export default function PatientProfile() {
       <Box role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} sx={{ pt: 2 }}>
         {tab === 'dados' && <DadosTab patient={patient} onSaved={setPatient} />}
         {tab === 'anamnese' && <AnamneseTab patient={patient} />}
+        {tab === 'prescricoes' && <PrescricoesTab patient={patient} />}
         {tab === 'financeiro' && (
           <FinanceiroTab
             patient={patient}
@@ -95,7 +97,7 @@ export default function PatientProfile() {
             onPaymentsChange={setPayments}
           />
         )}
-        {(tab === 'prescricoes' || tab === 'relatorio') && (
+        {tab === 'relatorio' && (
           <Typography color="text.secondary">Esta seção ainda não está disponível.</Typography>
         )}
       </Box>

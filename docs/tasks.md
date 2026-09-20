@@ -26,9 +26,9 @@ Ordem de execução. Cada tarefa entrega o menor incremento utilizável e cita a
 - [x] **T15** `services/anamnese.ts` e `AnamneseTab`: Accordion por seção, campos gerados do schema, seção Voz opcional, Salvar. *(RF-06)*
 
 ## M4 — Prescrições e impressão
-- [ ] **T16** `PrintSheet` (portal, `afterprint`, estilos `@media print` A4). *(RF-07, RF-09)*
-- [ ] **T17** `PrescricoesTab`: lista, criar/editar com exercícios dinâmicos, frequência. *(RF-07)*
-- [ ] **T18** Impressão da prescrição no formato do exemplo, com assinatura do tenant. *(RF-07)*
+- [x] **T16** `PrintSheet` (portal, `afterprint`, estilos `@media print` A4). *(RF-07, RF-09)*
+- [x] **T17** `PrescricoesTab`: lista, criar/editar com exercícios dinâmicos, frequência. *(RF-07)*
+- [x] **T18** Impressão da prescrição no formato do exemplo, com assinatura do tenant. *(RF-07)*
 - [ ] **T19** `RelatorioTab`: seleção de seções, pré-visualização e Imprimir. *(RF-09)*
 
 ## M5 — Fechamento

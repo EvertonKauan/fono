@@ -51,7 +51,8 @@ export const theme = createTheme(
           '.print-sheet': { display: 'none' },
           '@page': { size: 'A4', margin: '18mm' },
           '@media print': {
-            '#root': { display: 'none' },
+            // esconde o app e qualquer portal aberto (Dialog, Menu); só o .print-sheet sai no papel
+            'body > :not(.print-sheet)': { display: 'none !important' },
             'html, body': {
               background: theme.palette.common.white,
               color: theme.palette.common.black,
