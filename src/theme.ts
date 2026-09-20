@@ -67,6 +67,16 @@ export const theme = createTheme(
           root: ({ theme }) => ({ border: `1px solid ${theme.palette.divider}` }),
         },
       },
+      MuiAppBar: {
+        defaultProps: { color: 'inherit' },
+        styleOverrides: {
+          root: ({ theme }) => ({
+            backgroundColor: theme.palette.background.paper,
+            color: theme.palette.text.primary,
+            borderWidth: '0 0 1px',
+          }),
+        },
+      },
       MuiButton: { defaultProps: { disableElevation: true } },
       MuiTextField: { defaultProps: { size: 'small' } },
       MuiDataGrid: {

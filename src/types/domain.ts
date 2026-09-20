@@ -7,7 +7,9 @@ export type Tenant = {
 // só mock; na Fase 2 a autenticação passa a ser do back-end
 export type User = { id: string; tenantId: string; username: string; password: string }
 
-export type PatientKind = 'crianca' | 'adulto'
+export type Session = { userId: string; tenantId: string; username: string; tenant: Tenant }
+
+export type PatientKind ='crianca' | 'adulto'
 
 export type Patient = {
   id: string

@@ -9,8 +9,8 @@ Ordem de execução. Cada tarefa entrega o menor incremento utilizável e cita a
 - [x] **T04** `services/db.ts` + `mocks/seed.ts`: dois tenants, pacientes, lançamentos, 1 anamnese e 1 prescrição. *(RF-10)*
 
 ## M1 — Acesso e lista
-- [ ] **T05** Login mockado (`clau` / `123`), `SessionProvider`, `RequireAuth`, sair. *(RF-01)*
-- [ ] **T06** `AppLayout` (topo com nome da clínica e Sair) e rotas. *(RF-01)*
+- [x] **T05** Login mockado (`clau` / `123`), `SessionProvider`, `RequireAuth`, sair. *(RF-01)*
+- [x] **T06** `AppLayout` (topo com nome da clínica e Sair) e rotas. *(RF-01)*
 - [ ] **T07** `services/patients.ts` e `payments.ts` (listar/criar/atualizar, sempre por `tenantId`). *(RF-10)*
 - [ ] **T08** `PatientsPage`: DataGrid, busca, filtros e `PaymentChip`. *(RF-02)*
 - [ ] **T09** `NewPatientDialog` com sugestão de tipo pela idade; salvar e abrir o perfil. *(RF-03)*
@@ -22,7 +22,7 @@ Ordem de execução. Cada tarefa entrega o menor incremento utilizável e cita a
 - [ ] **T13** `FinanceiroTab`: tabela de lançamentos, novo lançamento, marcar pago/desfazer, resumo do ano; status refletido no cabeçalho e na lista. *(RF-08)*
 
 ## M3 — Anamnese
-- [ ] **T14** `mocks/anamnese-schema.ts` a partir do Anexo A da spec, com teste do filtro por público. *(RF-06)*
+- [ ] **T14** `mocks/anamnese-schema.ts` a partir do Anexo A da spec, com teste do filtro por público. Os ids das perguntas devem ser os já usados em `mocks/seed.ts` (ex.: `queixa_motivo`, `gestacao_ictericia`), não o contrário: o schema se adapta ao seed. *(RF-06)*
 - [ ] **T15** `services/anamnese.ts` e `AnamneseTab`: Accordion por seção, campos gerados do schema, seção Voz opcional, Salvar. *(RF-06)*
 
 ## M4 — Prescrições e impressão
