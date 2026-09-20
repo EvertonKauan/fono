@@ -16,10 +16,10 @@ Ordem de execução. Cada tarefa entrega o menor incremento utilizável e cita a
 - [x] **T09** `NewPatientDialog` com sugestão de tipo pela idade; salvar e abrir o perfil. *(RF-03)*
 
 ## M2 — Perfil
-- [ ] **T10** `PatientProfile` + `PatientHeader` + `Tabs` ligadas à query `?aba=`. *(RF-04)*
-- [ ] **T11** `DadosTab`: campos por tipo, CPF com máscara/validação, responsável financeiro para menores. *(RF-05)*
-- [ ] **T12** `FinanceiroTab`: bloco Atendimento (valor, dias, horário). *(RF-08)*
-- [ ] **T13** `FinanceiroTab`: tabela de lançamentos, novo lançamento, marcar pago/desfazer, resumo do ano; status refletido no cabeçalho e na lista. *(RF-08)*
+- [x] **T10** `PatientProfile` + `PatientHeader` + `Tabs` ligadas à query `?aba=`. *(RF-04)*
+- [x] **T11** `DadosTab`: campos por tipo, CPF com máscara/validação, responsável financeiro para menores. *(RF-05)*
+- [x] **T12** `FinanceiroTab`: bloco Atendimento (valor, dias, horário). *(RF-08)*
+- [x] **T13** `FinanceiroTab`: tabela de lançamentos, novo lançamento, marcar pago/desfazer, resumo do ano; status refletido no cabeçalho e na lista. *(RF-08)*
 
 ## M3 — Anamnese
 - [ ] **T14** `mocks/anamnese-schema.ts` a partir do Anexo A da spec, com teste do filtro por público. Os ids das perguntas devem ser os já usados em `mocks/seed.ts` (ex.: `queixa_motivo`, `gestacao_ictericia`), não o contrário: o schema se adapta ao seed. *(RF-06)*

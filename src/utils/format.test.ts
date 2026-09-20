@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatAge, formatCurrency, formatDate, formatPeriod, formatWeekdays, normalizeText } from './format.ts'
+import { formatAge, formatCurrency, formatDate, formatPeriod, formatWeekdays, normalizeText, parseMoney } from './format.ts'
 
 describe('format', () => {
   it('formata data como dd/mm/aaaa', () => {
@@ -24,5 +24,14 @@ describe('format', () => {
 
   it('normaliza texto sem acentos e maiúsculas', () => {
     expect(normalizeText('LÍVIA Cardoso')).toBe('livia cardoso')
+  })
+
+  it('interpreta valores digitados em reais', () => {
+    expect(parseMoney('1.234,50')).toBe(1234.5)
+    expect(parseMoney('150,5')).toBe(150.5)
+    expect(parseMoney('150.50')).toBe(150.5)
+    expect(parseMoney('1.234')).toBe(1234)
+    expect(parseMoney('150')).toBe(150)
+    expect(parseMoney('')).toBe(0)
   })
 })

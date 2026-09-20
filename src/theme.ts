@@ -98,6 +98,11 @@ export const theme = createTheme(
           }),
         },
       },
+      MuiTabs: {
+        styleOverrides: {
+          root: ({ theme }) => ({ borderBottom: `1px solid ${theme.palette.divider}` }),
+        },
+      },
       MuiTab: {
         styleOverrides: { root: { minHeight: 44, fontWeight: 600 } },
       },

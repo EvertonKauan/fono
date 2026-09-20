@@ -7,6 +7,10 @@ export async function listPatients(tenantId: string): Promise<Patient[]> {
   return selectRows('patients', tenantId)
 }
 
+export async function getPatient(tenantId: string, id: string): Promise<Patient | undefined> {
+  return selectRows('patients', tenantId).find((patient) => patient.id === id)
+}
+
 export async function createPatient(tenantId: string, input: NewPatient): Promise<Patient> {
   const patient: Patient = {
     ...input,

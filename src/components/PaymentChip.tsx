@@ -1,9 +1,11 @@
 import Chip from '@mui/material/Chip'
 
-export default function PaymentChip({ pending }: { pending: boolean }) {
+type Props = { pending: boolean; paidLabel?: string }
+
+export default function PaymentChip({ pending, paidLabel = 'Em dia' }: Props) {
   return pending ? (
     <Chip label="Pendente" color="error" />
   ) : (
-    <Chip label="Em dia" color="primary" variant="outlined" />
+    <Chip label={paidLabel} color="primary" variant="outlined" />
   )
 }
