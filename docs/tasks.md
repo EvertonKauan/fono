@@ -67,8 +67,8 @@ Revisão do RF-13: substitui a decisão "o calendário só mostra e edita". Agor
 - [x] **T38** `SessionPreview` (Popover) em todas as visões, com paciente, dia/horário, status, cobrança e "Editar" que abre o `SessionDialog`; Esc ou clicar fora fecha. *(RF-13)*
 - [x] **T39** `SessionDialog` com escolha de paciente (`Autocomplete`, só ativos do tenant, sem acento, obrigatório) e `initialDate`/`initialTime`; sugestão do horário do paciente; teste da lista de opções. *(RF-13, RF-11, RF-12)*
 - [x] **T40** Criar no calendário: clique em horário vazio (`TimeGrid`), em dia vazio (Mês) e botão "Nova sessão" no topo; a sessão aparece no calendário e na aba Sessões. *(RF-13)*
-- [ ] **T41** Verificação dos critérios de aceite revisados do RF-13, do isolamento (calendário e busca de paciente entre tenants, arquivados fora da busca) e regressão de RF-11, RF-12, RF-14 e RF-15. *(RF-10, RF-13)*
-- [ ] **T42** Verificação responsiva das visões novas (Semana, Dia, prévia, criação e agenda) em 360/390/1280 e nos limites `sm`/`md`; registrar em `docs/known-issues.md` qualquer limitação nova. *(RNF responsivo)*
+- [x] **T41** Verificação dos critérios de aceite revisados do RF-13, do isolamento (calendário e busca de paciente entre tenants, arquivados fora da busca) e regressão de RF-11, RF-12, RF-14 e RF-15. *(RF-10, RF-13)*
+- [x] **T42** Verificação responsiva das visões novas (Semana, Dia, prévia, criação e agenda) em 360/390/1280 e nos limites `sm`/`md`; registrar em `docs/known-issues.md` qualquer limitação nova. *(RNF responsivo)*
 
 ## Fase 2 (fora deste documento)
 Back-end e banco de dados; troca do miolo de `services/` por HTTP (inclui anexos em armazenamento de objetos); autenticação real; emissão do recibo anual em PDF; agenda avançada (recorrência, conflito de horários, arrastar para reagendar, duração da sessão).
