@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Dialog from '@mui/material/Dialog'
@@ -13,6 +14,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import dayjs, { type Dayjs } from 'dayjs'
 import { useTenantId } from '../../../auth/useSession.ts'
 import MoneyField from '../../../components/MoneyField.tsx'
+import { useSave } from '../../../components/useSave.ts'
 import { createPayment } from '../../../services/payments.ts'
 import type { Patient, Payment } from '../../../types/domain.ts'
 
@@ -26,7 +28,7 @@ export default function NewPaymentDialog({ patient, onClose, onCreated }: Props)
   const [sessionsText, setSessionsText] = useState(String(Math.max(patient.visit.weekdays.length, 1) * 4))
   const [manualAmount, setManualAmount] = useState<number | null>(null)
   const [submitted, setSubmitted] = useState(false)
-  const [saving, setSaving] = useState(false)
+  const { saving, error, run } = useSave()
 
   const sessions = Number(sessionsText)
   const sessionsValid = Number.isInteger(sessions) && sessions >= 1
@@ -37,15 +39,16 @@ export default function NewPaymentDialog({ patient, onClose, onCreated }: Props)
     event.preventDefault()
     setSubmitted(true)
     if (!period || !periodValid || !sessionsValid || amount <= 0) return
-    setSaving(true)
-    const payment = await createPayment(tenantId, {
-      patientId: patient.id,
-      period: period.format('YYYY-MM'),
-      sessions,
-      amount,
-      status: 'pendente',
+    await run(async () => {
+      const payment = await createPayment(tenantId, {
+        patientId: patient.id,
+        period: period.format('YYYY-MM'),
+        sessions,
+        amount,
+        status: 'pendente',
+      })
+      await onCreated(payment)
     })
-    await onCreated(payment)
   }
 
   return (
@@ -54,6 +57,7 @@ export default function NewPaymentDialog({ patient, onClose, onCreated }: Props)
         <DialogTitle id="lancamento-titulo">Novo lançamento</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
+            {error && <Alert severity="error">{error}</Alert>}
             <DatePicker
               label="Competência"
               value={period}

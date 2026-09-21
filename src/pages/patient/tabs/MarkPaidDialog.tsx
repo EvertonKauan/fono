@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Dialog from '@mui/material/Dialog'
@@ -10,6 +11,7 @@ import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import dayjs, { type Dayjs } from 'dayjs'
+import { useSave } from '../../../components/useSave.ts'
 import type { Payment, PaymentMethod } from '../../../types/domain.ts'
 import { formatPeriod, methodLabel } from '../../../utils/format.ts'
 
@@ -24,7 +26,7 @@ export default function MarkPaidDialog({ payment, onClose, onConfirm }: Props) {
   const [date, setDate] = useState<Dayjs | null>(() => dayjs())
   const [method, setMethod] = useState<PaymentMethod>('pix')
   const [submitted, setSubmitted] = useState(false)
-  const [saving, setSaving] = useState(false)
+  const { saving, error, run } = useSave()
 
   const dateValid = date !== null && date.isValid() && !date.isAfter(dayjs())
 
@@ -32,8 +34,7 @@ export default function MarkPaidDialog({ payment, onClose, onConfirm }: Props) {
     event.preventDefault()
     setSubmitted(true)
     if (!date || !dateValid) return
-    setSaving(true)
-    await onConfirm(date.format('YYYY-MM-DD'), method)
+    await run(() => onConfirm(date.format('YYYY-MM-DD'), method))
   }
 
   return (
@@ -42,6 +43,7 @@ export default function MarkPaidDialog({ payment, onClose, onConfirm }: Props) {
         <DialogTitle id="pago-titulo">Marcar como pago — {formatPeriod(payment.period)}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
+            {error && <Alert severity="error">{error}</Alert>}
             <DatePicker
               label="Data do pagamento"
               value={date}

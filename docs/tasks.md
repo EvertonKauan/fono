@@ -56,9 +56,9 @@ Arquivar paciente, sessões com evolução e cobrança, calendário e anexos. Tu
 - [x] **T32** Anexos na evolução do `SessionDialog`: Salvar aplica, Cancelar descarta. *(RF-15, RF-12)*
 
 ## M9 — Fechamento da expansão
-- [ ] **T33** Acabamento: estados vazios, mensagens de erro em pt-BR e falha de gravação (`localStorage`/IndexedDB) sem travar botão nos formulários novos; atualizar `docs/known-issues.md`.
-- [ ] **T34** Verificação dos critérios de aceite de RF-11 a RF-15, do isolamento de sessões e anexos entre tenants (RF-10) e regressão de RF-01 a RF-09.
-- [ ] **T35** Verificação responsiva das telas novas (Sessões, Calendário em grade e em agenda, Dialogs, filtro de arquivados, anexos) em 360/390/1280 e nos limites `sm`/`md`. *(RNF responsivo)*
+- [x] **T33** Acabamento: estados vazios, mensagens de erro em pt-BR e falha de gravação (`localStorage`/IndexedDB) sem travar botão nos formulários novos; atualizar `docs/known-issues.md`.
+- [x] **T34** Verificação dos critérios de aceite de RF-11 a RF-15, do isolamento de sessões e anexos entre tenants (RF-10) e regressão de RF-01 a RF-09.
+- [x] **T35** Verificação responsiva das telas novas (Sessões, Calendário em grade e em agenda, Dialogs, filtro de arquivados, anexos) em 360/390/1280 e nos limites `sm`/`md`. *(RNF responsivo)*
 
 ## Fase 2 (fora deste documento)
 Back-end e banco de dados; troca do miolo de `services/` por HTTP (inclui anexos em armazenamento de objetos); autenticação real; emissão do recibo anual em PDF; agenda avançada (recorrência, conflito de horários, criar sessão pelo calendário).

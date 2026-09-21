@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
+import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Dialog from '@mui/material/Dialog'
@@ -14,6 +15,7 @@ import { useTheme } from '@mui/material/styles'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import type { Dayjs } from 'dayjs'
 import { useTenantId } from '../../auth/useSession.ts'
+import { useSave } from '../../components/useSave.ts'
 import { createPatient } from '../../services/patients.ts'
 import type { PatientKind } from '../../types/domain.ts'
 import { isMinor } from '../../utils/age.ts'
@@ -47,7 +49,7 @@ function NewPatientForm({ onClose }: { onClose: () => void }) {
   const [kindChanged, setKindChanged] = useState(false)
   const [phone, setPhone] = useState('')
   const [submitted, setSubmitted] = useState(false)
-  const [saving, setSaving] = useState(false)
+  const { saving, error, run } = useSave()
 
   const birthValid = birthDate !== null && birthDate.isValid()
   const nameError = submitted && fullName.trim() === ''
@@ -62,14 +64,15 @@ function NewPatientForm({ onClose }: { onClose: () => void }) {
     event.preventDefault()
     setSubmitted(true)
     if (fullName.trim() === '' || !birthDate || !birthValid) return
-    setSaving(true)
-    const patient = await createPatient(tenantId, {
-      fullName: fullName.trim(),
-      birthDate: birthDate.format('YYYY-MM-DD'),
-      kind,
-      phone: phone.trim() || undefined,
+    await run(async () => {
+      const patient = await createPatient(tenantId, {
+        fullName: fullName.trim(),
+        birthDate: birthDate.format('YYYY-MM-DD'),
+        kind,
+        phone: phone.trim() || undefined,
+      })
+      navigate(`/pacientes/${patient.id}?aba=dados`)
     })
-    navigate(`/pacientes/${patient.id}?aba=dados`)
   }
 
   return (
@@ -82,6 +85,7 @@ function NewPatientForm({ onClose }: { onClose: () => void }) {
       <DialogTitle id="novo-paciente-titulo">Novo paciente</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
+          {error && <Alert severity="error">{error}</Alert>}
           <TextField
             label="Nome completo"
             name="fullName"

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import Alert from '@mui/material/Alert'
 import Button from '@mui/material/Button'
 import Checkbox from '@mui/material/Checkbox'
 import FormControlLabel from '@mui/material/FormControlLabel'
@@ -16,6 +17,7 @@ import Toast from '../../components/Toast.tsx'
 import { listPatients, unarchivePatient } from '../../services/patients.ts'
 import { listPayments } from '../../services/payments.ts'
 import type { Patient } from '../../types/domain.ts'
+import { SAVE_ERROR } from '../../utils/messages.ts'
 import NewPatientDialog from './NewPatientDialog.tsx'
 import PatientCards from './PatientCards.tsx'
 import PatientsTable from './PatientsTable.tsx'
@@ -43,6 +45,7 @@ export default function PatientsPage() {
   const [filters, setFilters] = useState<PatientFilters>({ query: '', kind: 'todos', onlyPending: false, status: 'ativos' })
   const [dialogOpen, setDialogOpen] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
+  const [unarchiveError, setUnarchiveError] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -66,9 +69,14 @@ export default function PatientsPage() {
   const onUnarchive =
     filters.status === 'arquivados'
       ? async (id: string) => {
-          await unarchivePatient(tenantId, id)
-          setVersion((v) => v + 1)
-          setToast('Paciente desarquivado.')
+          setUnarchiveError(false)
+          try {
+            await unarchivePatient(tenantId, id)
+            setVersion((v) => v + 1)
+            setToast('Paciente desarquivado.')
+          } catch {
+            setUnarchiveError(true)
+          }
         }
       : undefined
 
@@ -138,6 +146,7 @@ export default function PatientsPage() {
         />
       </Stack>
 
+      {unarchiveError && <Alert severity="error">{SAVE_ERROR}</Alert>}
       {data && (
         <Typography variant="body2" color="text.secondary" aria-live="polite">
           {rows.length === 1 ? '1 paciente' : `${rows.length} pacientes`}

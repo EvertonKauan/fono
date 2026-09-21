@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link as RouterLink, useParams, useSearchParams } from 'react-router-dom'
+import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Stack from '@mui/material/Stack'
@@ -20,6 +21,7 @@ import PrescricoesTab from './tabs/PrescricoesTab.tsx'
 import RelatorioTab from './tabs/RelatorioTab.tsx'
 import SessoesTab from './tabs/SessoesTab.tsx'
 import { hasPending } from './tabs/financeiro.ts'
+import { SAVE_ERROR } from '../../utils/messages.ts'
 
 const TABS = [
   { key: 'dados', label: 'Dados' },
@@ -43,6 +45,7 @@ export default function PatientProfile() {
   const [state, setState] = useState<State>()
   const [archiving, setArchiving] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
+  const [archiveError, setArchiveError] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -80,8 +83,13 @@ export default function PatientProfile() {
   }
 
   async function unarchive() {
-    setPatient(await unarchivePatient(tenantId, patient!.id))
-    setToast('Paciente desarquivado.')
+    setArchiveError(false)
+    try {
+      setPatient(await unarchivePatient(tenantId, patient!.id))
+      setToast('Paciente desarquivado.')
+    } catch {
+      setArchiveError(true)
+    }
   }
 
   return (
@@ -104,6 +112,11 @@ export default function PatientProfile() {
           ))}
         </Tabs>
       </Box>
+      {archiveError && (
+        <Alert severity="error" sx={{ mt: 1 }}>
+          {SAVE_ERROR}
+        </Alert>
+      )}
       <Box role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} sx={{ pt: 2 }}>
         {tab === 'dados' && <DadosTab patient={patient} onSaved={setPatient} />}
         {tab === 'anamnese' && <AnamneseTab patient={patient} />}

@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import MenuItem from '@mui/material/MenuItem'
@@ -13,6 +14,7 @@ import dayjs from 'dayjs'
 import { useTenantId } from '../../../auth/useSession.ts'
 import MoneyField from '../../../components/MoneyField.tsx'
 import Toast from '../../../components/Toast.tsx'
+import { useSave } from '../../../components/useSave.ts'
 import { savePatient } from '../../../services/patients.ts'
 import { listPayments, savePayment } from '../../../services/payments.ts'
 import type { Patient, Payment, PaymentMethod } from '../../../types/domain.ts'
@@ -37,14 +39,18 @@ export default function FinanceiroTab({ patient, payments, onPatientSaved, onPay
   const [creating, setCreating] = useState(false)
   const [paying, setPaying] = useState<Payment | null>(null)
   const [toast, setToast] = useState<string | null>(null)
+  const visitSave = useSave()
+  const undoSave = useSave()
 
   const yearPayments = payments.filter((p) => yearOf(p.period) === year).sort(byPeriodDesc)
   const summary = summarize(payments, year)
 
   async function saveVisit(event: FormEvent) {
     event.preventDefault()
-    onPatientSaved(await savePatient(tenantId, { ...patient, visit: { ...visit, time: visit.time || undefined } }))
-    setToast('Atendimento salvo.')
+    await visitSave.run(async () => {
+      onPatientSaved(await savePatient(tenantId, { ...patient, visit: { ...visit, time: visit.time || undefined } }))
+      setToast('Atendimento salvo.')
+    })
   }
 
   const refreshPayments = async () => onPaymentsChange(await listPayments(tenantId, patient.id))
@@ -57,9 +63,11 @@ export default function FinanceiroTab({ patient, payments, onPatientSaved, onPay
   }
 
   async function undo(payment: Payment) {
-    await savePayment(tenantId, { ...payment, status: 'pendente', paidAt: undefined, method: undefined })
-    await refreshPayments()
-    setToast('Pagamento desfeito.')
+    await undoSave.run(async () => {
+      await savePayment(tenantId, { ...payment, status: 'pendente', paidAt: undefined, method: undefined })
+      await refreshPayments()
+      setToast('Pagamento desfeito.')
+    })
   }
 
   async function created(payment: Payment) {
@@ -77,6 +85,7 @@ export default function FinanceiroTab({ patient, payments, onPatientSaved, onPay
         </Typography>
         <Paper component="form" noValidate onSubmit={saveVisit} sx={{ p: { xs: 2, sm: 3 } }}>
           <Stack spacing={2}>
+            {visitSave.error && <Alert severity="error">{visitSave.error}</Alert>}
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' }, gap: 2 }}>
               <MoneyField
                 label="Valor da consulta"
@@ -116,7 +125,7 @@ export default function FinanceiroTab({ patient, payments, onPatientSaved, onPay
               </ToggleButtonGroup>
             </Box>
             <Box>
-              <Button type="submit" variant="contained">
+              <Button type="submit" variant="contained" disabled={visitSave.saving}>
                 Salvar atendimento
               </Button>
             </Box>
@@ -169,6 +178,11 @@ export default function FinanceiroTab({ patient, payments, onPatientSaved, onPay
           </Paper>
         </Box>
 
+        {undoSave.error && (
+          <Alert severity="error" sx={{ mb: 1.5 }}>
+            {undoSave.error}
+          </Alert>
+        )}
         {payments.length === 0 ? (
           <Typography color="text.secondary">Nenhum lançamento cadastrado. Use “Novo lançamento” para começar.</Typography>
         ) : (

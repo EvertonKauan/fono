@@ -13,6 +13,7 @@ import Delete from '@mui/icons-material/Delete'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import dayjs, { type Dayjs } from 'dayjs'
 import { useTenantId } from '../../../auth/useSession.ts'
+import { useSave } from '../../../components/useSave.ts'
 import CpfField from '../../../components/CpfField.tsx'
 import Toast from '../../../components/Toast.tsx'
 import { savePatient } from '../../../services/patients.ts'
@@ -37,7 +38,7 @@ export default function DadosTab({ patient, onSaved }: Props) {
   const [birth, setBirth] = useState<Dayjs | null>(() => dayjs(patient.birthDate))
   const [touched, setTouched] = useState<Set<string>>(new Set())
   const [submitted, setSubmitted] = useState(false)
-  const [saving, setSaving] = useState(false)
+  const { saving, error: saveError, run } = useSave()
   const [toast, setToast] = useState<string | null>(null)
 
   const birthValid = birth !== null && birth.isValid() && !birth.isAfter(dayjs())
@@ -75,27 +76,27 @@ export default function DadosTab({ patient, onSaved }: Props) {
     event.preventDefault()
     setSubmitted(true)
     if (Object.keys(errors).length > 0 || !birth) return
-    setSaving(true)
-    const saved = await savePatient(tenantId, {
-      ...draft,
-      archivedAt: patient.archivedAt,
-      fullName: draft.fullName.trim(),
-      birthDate: birth.format(ISO),
-      gender: blankToUndefined(draft.gender),
-      city: blankToUndefined(draft.city),
-      address: blankToUndefined(draft.address),
-      phone: blankToUndefined(draft.phone),
-      email: blankToUndefined(draft.email),
-      referredBy: blankToUndefined(draft.referredBy),
-      schooling: blankToUndefined(draft.schooling),
-      school: blankToUndefined(draft.school),
-      occupation: blankToUndefined(draft.occupation),
-      cpf: draft.cpf || undefined,
-      financialGuardian: draft.financialGuardian && (draft.financialGuardian.name || draft.financialGuardian.cpf) ? draft.financialGuardian : undefined,
+    await run(async () => {
+      const saved = await savePatient(tenantId, {
+        ...draft,
+        archivedAt: patient.archivedAt,
+        fullName: draft.fullName.trim(),
+        birthDate: birth.format(ISO),
+        gender: blankToUndefined(draft.gender),
+        city: blankToUndefined(draft.city),
+        address: blankToUndefined(draft.address),
+        phone: blankToUndefined(draft.phone),
+        email: blankToUndefined(draft.email),
+        referredBy: blankToUndefined(draft.referredBy),
+        schooling: blankToUndefined(draft.schooling),
+        school: blankToUndefined(draft.school),
+        occupation: blankToUndefined(draft.occupation),
+        cpf: draft.cpf || undefined,
+        financialGuardian: draft.financialGuardian && (draft.financialGuardian.name || draft.financialGuardian.cpf) ? draft.financialGuardian : undefined,
+      })
+      onSaved(saved)
+      setToast('Dados salvos.')
     })
-    setSaving(false)
-    onSaved(saved)
-    setToast('Dados salvos.')
   }
 
   return (
@@ -104,6 +105,7 @@ export default function DadosTab({ patient, onSaved }: Props) {
         {submitted && Object.keys(errors).length > 0 && (
           <Alert severity="error">Corrija os campos destacados antes de salvar.</Alert>
         )}
+        {saveError && <Alert severity="error">{saveError}</Alert>}
 
         <Section title="Identificação">
           <Box sx={twoColumns}>

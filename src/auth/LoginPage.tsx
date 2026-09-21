@@ -21,6 +21,7 @@ export default function LoginPage() {
   const [failed, setFailed] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [unavailable, setUnavailable] = useState(false)
 
   if (session) return <Navigate to="/pacientes" replace />
 
@@ -29,8 +30,14 @@ export default function LoginPage() {
     setSubmitted(true)
     if (!username.trim() || !password) return
     setSubmitting(true)
-    setFailed(!(await login(username.trim(), password)))
-    setSubmitting(false)
+    setUnavailable(false)
+    try {
+      setFailed(!(await login(username.trim(), password)))
+    } catch {
+      setUnavailable(true)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -44,6 +51,9 @@ export default function LoginPage() {
       <Paper component="form" noValidate onSubmit={handleSubmit} sx={{ p: { xs: 2, sm: 3 } }}>
         <Stack spacing={2}>
           {failed && <Alert severity="error">Usuário ou senha inválidos.</Alert>}
+          {unavailable && (
+            <Alert severity="error">Não foi possível entrar. Verifique se o navegador permite armazenar dados e tente novamente.</Alert>
+          )}
           <TextField
             label="Usuário"
             id="username"

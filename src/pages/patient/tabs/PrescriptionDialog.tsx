@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Dialog from '@mui/material/Dialog'
@@ -20,6 +21,7 @@ import Delete from '@mui/icons-material/Delete'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import dayjs, { type Dayjs } from 'dayjs'
 import { useTenantId } from '../../../auth/useSession.ts'
+import { useSave } from '../../../components/useSave.ts'
 import { createPrescription, savePrescription } from '../../../services/prescriptions.ts'
 import { newId } from '../../../utils/id.ts'
 import type { Prescription } from '../../../types/domain.ts'
@@ -46,7 +48,7 @@ export default function PrescriptionDialog({ patientId, prescription, onClose, o
   const [frequency, setFrequency] = useState(prescription?.frequency ?? '')
   const [focusKey, setFocusKey] = useState<string | null>(null)
   const [submitted, setSubmitted] = useState(false)
-  const [saving, setSaving] = useState(false)
+  const { saving, error, run } = useSave()
 
   const dateValid = date !== null && date.isValid()
   const titlesValid = exercises.every((e) => e.title.trim() !== '')
@@ -72,16 +74,17 @@ export default function PrescriptionDialog({ patientId, prescription, onClose, o
     event.preventDefault()
     setSubmitted(true)
     if (!valid || !date) return
-    setSaving(true)
     const data = {
       patientId,
       date: date.format('YYYY-MM-DD'),
       exercises: exercises.map((e) => ({ title: e.title.trim(), description: e.description.trim() })),
       frequency: frequency.trim(),
     }
-    if (prescription) await savePrescription(tenantId, { ...prescription, ...data })
-    else await createPrescription(tenantId, data)
-    await onSaved()
+    await run(async () => {
+      if (prescription) await savePrescription(tenantId, { ...prescription, ...data })
+      else await createPrescription(tenantId, data)
+      await onSaved()
+    })
   }
 
   return (
@@ -90,6 +93,7 @@ export default function PrescriptionDialog({ patientId, prescription, onClose, o
         <DialogTitle id="prescricao-titulo">{prescription ? 'Editar prescrição' : 'Nova prescrição'}</DialogTitle>
         <DialogContent>
           <Stack spacing={3} sx={{ pt: 1 }}>
+            {error && <Alert severity="error">{error}</Alert>}
             <DatePicker
               label="Data"
               value={date}
