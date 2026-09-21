@@ -51,9 +51,9 @@ Arquivar paciente, sessões com evolução e cobrança, calendário e anexos. Tu
 - [x] **T29** `MonthGrid`: grade mensal a partir de `md`; abaixo de `md` continua a agenda. *(RF-13)*
 
 ## M8 — Anexos
-- [ ] **T30** `services/attachments.ts` (IndexedDB) e `utils/files.ts` (`.pdf`/`.docx`, 10 MB), com testes usando `fake-indexeddb` (inclui isolamento por tenant). *(RF-15, RF-10; plan §12)*
-- [ ] **T31** `AttachmentsField` (rascunho em memória, baixar, remover, aviso de armazenamento local) integrado à `AnamneseTab`. *(RF-15, RF-06)*
-- [ ] **T32** Anexos na evolução do `SessionDialog`: Salvar aplica, Cancelar descarta. *(RF-15, RF-12)*
+- [x] **T30** `services/attachments.ts` (IndexedDB) e `utils/files.ts` (`.pdf`/`.docx`, 10 MB), com testes usando `fake-indexeddb` (inclui isolamento por tenant). *(RF-15, RF-10; plan §12)*
+- [x] **T31** `AttachmentsField` (rascunho em memória, baixar, remover, aviso de armazenamento local) integrado à `AnamneseTab`. *(RF-15, RF-06)*
+- [x] **T32** Anexos na evolução do `SessionDialog`: Salvar aplica, Cancelar descarta. *(RF-15, RF-12)*
 
 ## M9 — Fechamento da expansão
 - [ ] **T33** Acabamento: estados vazios, mensagens de erro em pt-BR e falha de gravação (`localStorage`/IndexedDB) sem travar botão nos formulários novos; atualizar `docs/known-issues.md`.

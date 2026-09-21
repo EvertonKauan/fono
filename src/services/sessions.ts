@@ -21,9 +21,9 @@ export async function listSessionsBetween(tenantId: string, from: string, to: st
     .sort(byDateTime)
 }
 
-export async function createSession(tenantId: string, input: NewSession): Promise<Session> {
+export async function createSession(tenantId: string, input: NewSession, id: string = newId()): Promise<Session> {
   const now = new Date().toISOString()
-  const session: Session = { ...input, id: newId(), tenantId, createdAt: now, updatedAt: now }
+  const session: Session = { ...input, id, tenantId, createdAt: now, updatedAt: now }
   upsertRow('sessions', tenantId, session)
   return session
 }

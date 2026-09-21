@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import Accordion from '@mui/material/Accordion'
+import Alert from '@mui/material/Alert'
 import AccordionDetails from '@mui/material/AccordionDetails'
 import AccordionSummary from '@mui/material/AccordionSummary'
 import Box from '@mui/material/Box'
@@ -10,11 +11,14 @@ import Switch from '@mui/material/Switch'
 import Typography from '@mui/material/Typography'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import { useTenantId } from '../../../auth/useSession.ts'
+import AttachmentsField from '../../../components/AttachmentsField.tsx'
 import Toast from '../../../components/Toast.tsx'
+import { useAttachmentDraft } from '../../../components/useAttachmentDraft.ts'
 import { visibleSections } from '../../../mocks/anamnese-schema.ts'
 import { getAnamnese, saveAnamnese } from '../../../services/anamnese.ts'
 import type { Anamnese, AnamneseAnswer, Patient } from '../../../types/domain.ts'
 import { formatDateTime, kindLabel } from '../../../utils/format.ts'
+import { SAVE_ERROR } from '../../../utils/messages.ts'
 import QuestionField from './QuestionField.tsx'
 
 export default function AnamneseTab({ patient }: { patient: Patient }) {
@@ -44,6 +48,8 @@ function AnamneseForm({ patient, initial }: { patient: Patient; initial: Anamnes
   const [updatedAt, setUpdatedAt] = useState(initial?.updatedAt ?? null)
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const attachments = useAttachmentDraft({ type: 'anamnese', id: patient.id })
 
   const setAnswer = (id: string, answer: AnamneseAnswer | undefined) => {
     const next = { ...answers }
@@ -54,11 +60,23 @@ function AnamneseForm({ patient, initial }: { patient: Patient; initial: Anamnes
 
   async function handleSave() {
     setSaving(true)
-    // Respostas de perguntas ocultas pelo tipo atual são mantidas, para não se perderem se o tipo voltar.
-    const saved = await saveAnamnese(tenantId, { patientId: patient.id, answers, voiceApplicable })
-    setUpdatedAt(saved.updatedAt)
-    setSaving(false)
-    setToast('Anamnese salva.')
+    setError(null)
+    try {
+      // Respostas de perguntas ocultas pelo tipo atual são mantidas, para não se perderem se o tipo voltar.
+      const saved = await saveAnamnese(tenantId, { patientId: patient.id, answers, voiceApplicable })
+      setUpdatedAt(saved.updatedAt)
+      try {
+        await attachments.apply()
+      } catch {
+        setError('A anamnese foi salva, mas não foi possível gravar os anexos. Tente salvar de novo.')
+        return
+      }
+      setToast('Anamnese salva.')
+    } catch {
+      setError(SAVE_ERROR)
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -113,6 +131,10 @@ function AnamneseForm({ patient, initial }: { patient: Patient; initial: Anamnes
           )
         })}
       </Box>
+
+      <AttachmentsField title="Anexos da anamnese" attachments={attachments} saveNote="ao salvar a anamnese" />
+
+      {error && <Alert severity="error">{error}</Alert>}
 
       <Stack
         direction="row"

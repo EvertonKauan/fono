@@ -7,3 +7,4 @@ Pontos que passaram na verificação dos critérios de aceite (T21/T22) mas têm
 3. **Isolamento entre tenants só na camada de serviços.** Toda leitura e escrita filtra por `tenantId` em `src/services/`, mas o `localStorage` é único por navegador: quem abrir as ferramentas do desenvolvedor vê os dados dos dois tenants. O isolamento real vem com o back-end (Fase 2).
 4. **Ctrl+F não busca dentro de seções fechadas da anamnese.** O `Accordion` do MUI esconde o conteúdo fechado da busca do navegador. Abra a seção para localizar o texto.
 5. **Bundle acima de 500 kB, sem code-splitting.** O build do Vite avisa sobre o tamanho do chunk (MUI, DataGrid e date pickers). Divisão por rota fica para depois, se o tempo de carga incomodar.
+6. **Validação de anexo pela extensão e pelo tipo do navegador, não pelo conteúdo.** Um arquivo renomeado (por exemplo, um `.png` chamado `.pdf`) passaria. A conferência do conteúdo (assinatura do arquivo) fica para depois.

@@ -20,9 +20,12 @@ import { useTheme } from '@mui/material/styles'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import dayjs, { type Dayjs } from 'dayjs'
 import { useTenantId } from '../auth/useSession.ts'
+import AttachmentsField from './AttachmentsField.tsx'
+import { useAttachmentDraft } from './useAttachmentDraft.ts'
 import { createSession, saveSession, type NewSession } from '../services/sessions.ts'
 import type { BillingType, Session, SessionStatus } from '../types/domain.ts'
 import { sessionStatusLabel } from '../utils/format.ts'
+import { newId } from '../utils/id.ts'
 import { SAVE_ERROR } from '../utils/messages.ts'
 
 type Props = {
@@ -46,7 +49,12 @@ export default function SessionDialog({ patientId, patientName, session, default
   const [evolution, setEvolution] = useState(session?.evolution ?? '')
   const [submitted, setSubmitted] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  // id definido já na abertura, para os anexos de uma sessão nova terem dono antes de ela ser gravada
+  const [newSessionId] = useState(newId)
+  // sessão já gravada neste diálogo: se os anexos falharem, tentar de novo edita em vez de duplicar
+  const [persisted, setPersisted] = useState<Session | undefined>(session)
+  const attachments = useAttachmentDraft({ type: 'sessao', id: session?.id ?? newSessionId })
 
   const dateValid = date !== null && date.isValid()
   const insurerMissing = billing === 'convenio' && insurer.trim() === ''
@@ -56,7 +64,7 @@ export default function SessionDialog({ patientId, patientName, session, default
     setSubmitted(true)
     if (!date || !dateValid || insurerMissing) return
     setSaving(true)
-    setError(false)
+    setError(null)
     try {
       const data: NewSession = {
         patientId,
@@ -67,11 +75,18 @@ export default function SessionDialog({ patientId, patientName, session, default
         insurer: billing === 'convenio' ? insurer.trim() : undefined,
         evolution: evolution.trim() || undefined,
       }
-      if (session) await saveSession(tenantId, { ...session, ...data })
-      else await createSession(tenantId, data)
+      const saved = persisted ? await saveSession(tenantId, { ...persisted, ...data }) : await createSession(tenantId, data, newSessionId)
+      setPersisted(saved)
+      try {
+        await attachments.apply()
+      } catch {
+        setError('A sessão foi salva, mas não foi possível gravar os anexos. Tente salvar de novo.')
+        setSaving(false)
+        return
+      }
       await onSaved()
     } catch {
-      setError(true)
+      setError(SAVE_ERROR)
       setSaving(false)
     }
   }
@@ -83,7 +98,7 @@ export default function SessionDialog({ patientId, patientName, session, default
         <DialogContent>
           <Stack spacing={2.5} sx={{ pt: 0.5 }}>
             <Typography color="text.secondary">Paciente: {patientName}</Typography>
-            {error && <Alert severity="error">{SAVE_ERROR}</Alert>}
+            {error && <Alert severity="error">{error}</Alert>}
 
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' }, gap: 2 }}>
               <DatePicker
@@ -154,6 +169,8 @@ export default function SessionDialog({ patientId, patientName, session, default
               minRows={4}
               helperText="O que aconteceu na sessão."
             />
+
+            <AttachmentsField title="Anexos da evolução" attachments={attachments} saveNote="ao salvar a sessão" />
           </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
