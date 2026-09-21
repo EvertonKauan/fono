@@ -33,6 +33,35 @@ describe('migrateDb', () => {
     expect(ids.has('p-001')).toBe(true)
   })
 
+  it('sessão antiga sem valor recebe o antigo valor da consulta do paciente, sem tocar em lançamentos', () => {
+    const full = createSeed()
+    const old = {
+      ...full,
+      patients: full.patients.map((p) => (p.id === 'p-001' ? { ...p, visit: { ...p.visit, fee: 175 } } : p)),
+      sessions: full.sessions.map((s) => {
+        const legacySession: Partial<typeof s> = { ...s }
+        delete legacySession.value
+        return legacySession as typeof s
+      }),
+    }
+    const result = migrateDb(old)!
+    expect(result.changed).toBe(true)
+    const mine = result.db.sessions.filter((s) => s.patientId === 'p-001')
+    expect(mine.length).toBeGreaterThan(0)
+    expect(mine.every((s) => s.value === 175)).toBe(true)
+    expect(result.db.sessions.every((s) => typeof s.value === 'number')).toBe(true)
+    expect(result.db.payments).toBe(old.payments)
+    expect(migrateDb(result.db)).toEqual({ db: result.db, changed: false })
+  })
+
+  it('sessão que já tem valor não é alterada; paciente que não existe no banco vira valor 0', () => {
+    const full = createSeed()
+    const sessions = [full.sessions[0]!, { ...full.sessions[1]!, patientId: 'sumiu', value: undefined as unknown as number }]
+    const result = migrateDb({ ...full, sessions })!
+    expect(result.db.sessions[0]).toBe(sessions[0])
+    expect(result.db.sessions[1]!.value).toBe(0)
+  })
+
   it('banco já migrado fica igual', () => {
     const full = createSeed()
     expect(migrateDb(full)).toEqual({ db: full, changed: false })

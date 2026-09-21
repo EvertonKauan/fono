@@ -21,8 +21,10 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import dayjs, { type Dayjs } from 'dayjs'
 import { useTenantId } from '../auth/useSession.ts'
 import AttachmentsField from './AttachmentsField.tsx'
+import MoneyField from './MoneyField.tsx'
 import { useAttachmentDraft } from './useAttachmentDraft.ts'
-import { createSession, saveSession, type NewSession } from '../services/sessions.ts'
+import { suggestedValue } from '../services/billing.ts'
+import { createSession, listSessions, saveSession, type NewSession } from '../services/sessions.ts'
 import type { BillingType, Patient, Session, SessionStatus } from '../types/domain.ts'
 import { sessionStatusLabel } from '../utils/format.ts'
 import { newId } from '../utils/id.ts'
@@ -36,23 +38,27 @@ type Props = (
 ) & {
   session?: Session // ausente = nova sessão
   initialDate?: string // yyyy-mm-dd; padrão: hoje
-  initialTime?: string // HH:mm; em nova sessão com paciente escolhido, sem ele o dialog sugere o horário de atendimento do paciente
+  initialTime?: string // HH:mm
+  initialValue?: number // valor sugerido para sessão nova com paciente fixo; com paciente escolhido no campo, o dialog sugere sozinho
   onClose: () => void
   onSaved: () => Promise<void>
 }
 
 // Compartilhado entre a aba Sessões e o calendário. Montado só enquanto aberto: o estado é descartado ao fechar.
 export default function SessionDialog(props: Props) {
-  const { session, initialDate, initialTime, onClose, onSaved } = props
+  const { session, initialDate, initialTime, initialValue, onClose, onSaved } = props
   const tenantId = useTenantId()
   const fullScreen = useMediaQuery(useTheme().breakpoints.down('sm'))
   const choices = 'patients' in props ? patientOptions(props.patients, tenantId) : null
   const [chosen, setChosen] = useState<Patient | null>(null)
   const patientInput = useRef<HTMLInputElement>(null)
-  const [timeTouched, setTimeTouched] = useState(false)
+  // a sugestão de valor só vale enquanto o usuário não digitou um valor
+  const valueTouched = useRef(false)
+  const chosenId = useRef<string>(undefined)
   const patientId = 'patients' in props ? chosen?.id : props.patientId
   const [date, setDate] = useState<Dayjs | null>(() => dayjs(session?.date ?? initialDate))
   const [time, setTime] = useState(session ? (session.time ?? '') : (initialTime ?? ''))
+  const [value, setValue] = useState<number | null>(() => (session ? session.value : initialValue) || null)
   const [status, setStatus] = useState<SessionStatus>(session?.status ?? 'agendada')
   const [billing, setBilling] = useState<BillingType>(session?.billing ?? 'particular')
   const [insurer, setInsurer] = useState(session?.insurer ?? '')
@@ -68,16 +74,21 @@ export default function SessionDialog(props: Props) {
 
   const dateValid = date !== null && date.isValid()
   const insurerMissing = billing === 'convenio' && insurer.trim() === ''
+  const valueMissing = value === null
 
   function choosePatient(patient: Patient | null) {
     setChosen(patient)
-    if (patient && !timeTouched && !initialTime) setTime(patient.visit.time ?? '')
+    chosenId.current = patient?.id
+    if (!patient || valueTouched.current) return
+    listSessions(tenantId, patient.id).then((history) => {
+      if (chosenId.current === patient.id && !valueTouched.current) setValue(suggestedValue(history) ?? null)
+    })
   }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     setSubmitted(true)
-    if (!patientId || !date || !dateValid || insurerMissing) return
+    if (!patientId || !date || !dateValid || insurerMissing || value === null) return
     setSaving(true)
     setError(null)
     try {
@@ -86,6 +97,7 @@ export default function SessionDialog(props: Props) {
         date: date.format('YYYY-MM-DD'),
         time: time || undefined,
         status,
+        value,
         billing,
         insurer: billing === 'convenio' ? insurer.trim() : undefined,
         evolution: evolution.trim() || undefined,
@@ -175,27 +187,38 @@ export default function SessionDialog(props: Props) {
                 name="time"
                 type="time"
                 value={time}
-                onChange={(event) => {
-                  setTime(event.target.value)
-                  setTimeTouched(true)
-                }}
+                onChange={(event) => setTime(event.target.value)}
                 slotProps={{ inputLabel: { shrink: true } }}
               />
             </Box>
 
-            <TextField
-              select
-              label="Status"
-              name="status"
-              value={status}
-              onChange={(event) => setStatus(event.target.value as SessionStatus)}
-            >
-              {(Object.keys(sessionStatusLabel) as SessionStatus[]).map((key) => (
-                <MenuItem key={key} value={key}>
-                  {sessionStatusLabel[key]}
-                </MenuItem>
-              ))}
-            </TextField>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' }, gap: 2 }}>
+              <TextField
+                select
+                label="Status"
+                name="status"
+                value={status}
+                onChange={(event) => setStatus(event.target.value as SessionStatus)}
+              >
+                {(Object.keys(sessionStatusLabel) as SessionStatus[]).map((key) => (
+                  <MenuItem key={key} value={key}>
+                    {sessionStatusLabel[key]}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <MoneyField
+                label="Valor da sessão"
+                name="value"
+                value={value}
+                onChange={(next) => {
+                  valueTouched.current = true
+                  setValue(next > 0 ? next : null)
+                }}
+                required
+                error={submitted && valueMissing}
+                helperText={submitted && valueMissing ? 'Informe o valor da sessão.' : undefined}
+              />
+            </Box>
 
             <FormControl component="fieldset">
               <FormLabel component="legend" sx={{ color: 'text.primary', fontWeight: 600 }}>

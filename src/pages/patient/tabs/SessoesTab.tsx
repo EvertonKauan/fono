@@ -10,13 +10,17 @@ import { useTenantId } from '../../../auth/useSession.ts'
 import SessionDialog from '../../../components/SessionDialog.tsx'
 import SessionStatusLabel from '../../../components/SessionStatusLabel.tsx'
 import Toast from '../../../components/Toast.tsx'
+import { suggestedValue } from '../../../services/billing.ts'
+import { listPayments } from '../../../services/payments.ts'
 import { listSessions } from '../../../services/sessions.ts'
-import type { Patient, Session } from '../../../types/domain.ts'
-import { billingLabel, formatDate } from '../../../utils/format.ts'
+import type { Patient, Payment, Session } from '../../../types/domain.ts'
+import { billingLabel, formatCurrency, formatDate } from '../../../utils/format.ts'
 
 type DialogState = { session?: Session } | null
 
-export default function SessoesTab({ patient }: { patient: Patient }) {
+type Props = { patient: Patient; onPaymentsChange: (payments: Payment[]) => void }
+
+export default function SessoesTab({ patient, onPaymentsChange }: Props) {
   const tenantId = useTenantId()
   const [sessions, setSessions] = useState<Session[]>()
   const [dialog, setDialog] = useState<DialogState>(null)
@@ -34,6 +38,7 @@ export default function SessoesTab({ patient }: { patient: Patient }) {
 
   async function saved() {
     setSessions(await listSessions(tenantId, patient.id))
+    onPaymentsChange(await listPayments(tenantId, patient.id)) // a sessão Realizada pode ter criado ou ajustado um lançamento
     setDialog(null)
     setToast('Sessão salva.')
   }
@@ -81,6 +86,7 @@ export default function SessoesTab({ patient }: { patient: Patient }) {
                 <Stack direction="row" alignItems="center" columnGap={1.5} rowGap={0.5} flexWrap="wrap" sx={{ my: 0.5 }}>
                   <SessionStatusLabel status={session.status} />
                   <Typography variant="body2">{billingLabel(session)}</Typography>
+                  <Typography variant="body2">{formatCurrency(session.value)}</Typography>
                 </Stack>
                 {session.evolution && (
                   <Typography
@@ -113,7 +119,7 @@ export default function SessoesTab({ patient }: { patient: Patient }) {
           patientId={patient.id}
           patientName={patient.fullName}
           session={dialog.session}
-          initialTime={patient.visit.time}
+          initialValue={suggestedValue(sessions)}
           onClose={() => setDialog(null)}
           onSaved={saved}
         />

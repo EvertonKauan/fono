@@ -4,7 +4,7 @@ import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import SessionStatusLabel from '../../components/SessionStatusLabel.tsx'
 import { fullDayLabel } from '../../utils/calendar.ts'
-import { billingLabel, capitalize } from '../../utils/format.ts'
+import { billingLabel, capitalize, formatCurrency } from '../../utils/format.ts'
 import type { CalendarItem } from './calendarItems.ts'
 
 type Props = { item: CalendarItem; anchorEl: HTMLElement; onClose: () => void; onEdit: () => void }
@@ -30,6 +30,7 @@ export default function SessionPreview({ item: { session, patientName }, anchorE
         <Stack direction="row" alignItems="center" columnGap={1.5} rowGap={0.5} flexWrap="wrap">
           <SessionStatusLabel status={session.status} />
           <Typography variant="body2">{billingLabel(session)}</Typography>
+          <Typography variant="body2">{formatCurrency(session.value)}</Typography>
         </Stack>
         <Button variant="outlined" onClick={onEdit} sx={{ alignSelf: 'flex-start' }}>
           Editar

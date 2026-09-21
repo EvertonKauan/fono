@@ -17,16 +17,27 @@ export type Db = { tenants: Tenant[]; users: User[] } & TenantDb
 const STORAGE_KEY = 'fono:db'
 const LEGACY_TABLES = ['tenants', 'users', 'patients', 'anamneses', 'prescriptions', 'payments'] as const
 
-// Tabelas novas ausentes (hoje só `sessions`) são preenchidas pelo seed; as existentes nunca são tocadas.
-// Só um objeto ilegível (sem as tabelas originais) devolve null e é recriado por inteiro.
+// Tabelas novas ausentes (hoje só `sessions`) são preenchidas pelo seed; as existentes não são recriadas.
+// Exceção deliberada (RF-08): sessão sem `value` recebe o antigo `visit.fee` do paciente (0 se não houver).
+// Lançamentos não são tocados. Só um objeto ilegível (sem as tabelas originais) devolve null e é recriado por inteiro.
 export function migrateDb(value: unknown): { db: Db; changed: boolean } | null {
   if (typeof value !== 'object' || value === null) return null
   const record = value as Record<string, unknown>
   if (!LEGACY_TABLES.every((table) => Array.isArray(record[table]))) return null
-  if (Array.isArray(record.sessions)) return { db: record as unknown as Db, changed: false }
-  const patientIds = new Set((record.patients as Patient[]).map((patient) => patient.id))
-  const sessions = createSeed().sessions.filter((session) => patientIds.has(session.patientId))
-  return { db: { ...record, sessions } as unknown as Db, changed: true }
+  const patients = record.patients as Patient[]
+  if (!Array.isArray(record.sessions)) {
+    const patientIds = new Set(patients.map((patient) => patient.id))
+    const sessions = createSeed().sessions.filter((session) => patientIds.has(session.patientId))
+    return { db: { ...record, sessions } as unknown as Db, changed: true }
+  }
+  const feeOf = new Map(patients.map((p) => [p.id, (p as { visit?: { fee?: number } }).visit?.fee ?? 0]))
+  let changed = false
+  const sessions = (record.sessions as Session[]).map((session) => {
+    if (typeof session.value === 'number') return session
+    changed = true
+    return { ...session, value: feeOf.get(session.patientId) ?? 0 }
+  })
+  return changed ? { db: { ...record, sessions } as unknown as Db, changed: true } : { db: record as unknown as Db, changed: false }
 }
 
 export function saveDb(db: Db) {
@@ -55,6 +66,13 @@ export function loadDb(): Db {
   const db = createSeed()
   saveDb(db)
   return db
+}
+
+// Várias tabelas numa só gravação: se ela falhar, nenhuma mudança fica pela metade.
+export function updateDb(change: (db: Db) => void) {
+  const db = loadDb()
+  change(db)
+  saveDb(db)
 }
 
 export function selectRows<K extends TenantTable>(table: K, tenantId: string): TenantTables[K][] {

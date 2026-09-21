@@ -55,10 +55,34 @@ const session = (
   time,
   status,
   billing: 'particular',
+  value: patient.visit.fee,
   createdAt: `${date}T12:00:00.000Z`,
   updatedAt: `${date}T12:00:00.000Z`,
   ...extra,
 })
+
+// Lançamentos de setembro/2026 (mês do mock) = o que a regra do RF-08 geraria com as sessões Realizadas do mês:
+// mesmo status, data e forma de pagamento do lançamento original; sem sessão Realizada, sem lançamento.
+// Os de outros meses seguem como histórico.
+const MOCK_MONTH = '2026-09'
+
+function withSeptemberBilling(db: Db): Db {
+  const done = db.sessions.filter((s) => s.status === 'realizada' && s.date.startsWith(MOCK_MONTH))
+  const counted = new Map<string, NonNullable<Session['counted']>>()
+  const payments: Payment[] = []
+  for (const payment of db.payments) {
+    if (payment.period !== MOCK_MONTH) {
+      payments.push(payment)
+      continue
+    }
+    const mine = done.filter((s) => s.patientId === payment.patientId)
+    if (mine.length === 0) continue
+    const amount = mine.reduce((sum, s) => sum + Math.round(s.value * 100), 0) / 100
+    payments.push({ ...payment, sessions: mine.length, amount })
+    for (const s of mine) counted.set(s.id, { paymentId: payment.id, amount: s.value })
+  }
+  return { ...db, payments, sessions: db.sessions.map((s) => (counted.has(s.id) ? { ...s, counted: counted.get(s.id) } : s)) }
+}
 
 const insurer = { billing: 'convenio', insurer: 'Convênio Exemplo Saúde' } as const
 
@@ -253,7 +277,7 @@ export function createSeed(): Db {
     createdAt: '2026-01-05T12:00:00.000Z',
   }
 
-  return {
+  const db: Db = {
     tenants: [
       {
         id: CLAU,
@@ -313,7 +337,7 @@ export function createSeed(): Db {
       session(6, miguel, '2026-09-17', '15:00', 'realizada', { evolution: 'Retomada após a semana sem sessão. Manteve os ganhos do /l/; /r/ ainda em treino.' }),
       session(7, miguel, '2026-09-22', '15:00', 'agendada'),
       session(8, miguel, '2026-09-24', '15:00', 'agendada', insurer),
-      session(9, miguel, '2026-09-29', '15:00', 'agendada'),
+      session(9, miguel, '2026-09-29', '15:00', 'agendada', { value: 170 }), // valor diferente na mais recente: exercita a sugestão
       session(10, helena, '2026-09-07', '09:00', 'realizada', { evolution: 'Atividade lúdica com figuras: nomeou cerca de 20 objetos, com ajuda em alguns.' }),
       session(11, helena, '2026-09-14', '09:00', 'realizada', { evolution: 'Faz de conta com bonecos; ampliou frases de duas palavras.' }),
       session(12, helena, '2026-09-21', '09:00', 'agendada'),
@@ -394,4 +418,5 @@ export function createSeed(): Db {
       },
     ],
   }
+  return withSeptemberBilling(db)
 }

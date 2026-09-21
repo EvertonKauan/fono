@@ -6,7 +6,7 @@ import { formatDecimal, parseMoney } from '../utils/format.ts'
 type Props = {
   label: string
   name: string
-  value: number
+  value: number | null // null = campo vazio
   onChange: (value: number) => void
   required?: boolean
   error?: boolean
@@ -20,9 +20,9 @@ export default function MoneyField({ value, onChange, ...rest }: Props) {
   return (
     <TextField
       {...rest}
-      value={text ?? formatDecimal(value)}
+      value={text ?? (value === null ? '' : formatDecimal(value))}
       onFocus={(event) => {
-        setText(formatDecimal(value))
+        setText(value === null ? '' : formatDecimal(value))
         event.target.select()
       }}
       onChange={(event) => {

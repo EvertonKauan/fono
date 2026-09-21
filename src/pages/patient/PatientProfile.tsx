@@ -120,7 +120,7 @@ export default function PatientProfile() {
       <Box role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} sx={{ pt: 2 }}>
         {tab === 'dados' && <DadosTab patient={patient} onSaved={setPatient} />}
         {tab === 'anamnese' && <AnamneseTab patient={patient} />}
-        {tab === 'sessoes' && <SessoesTab patient={patient} />}
+        {tab === 'sessoes' && <SessoesTab patient={patient} onPaymentsChange={setPayments} />}
         {tab === 'prescricoes' && <PrescricoesTab patient={patient} />}
         {tab === 'financeiro' && (
           <FinanceiroTab

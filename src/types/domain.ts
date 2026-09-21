@@ -72,7 +72,7 @@ export type Payment = {
 export type SessionStatus = 'agendada' | 'realizada' | 'cancelada'
 export type BillingType = 'particular' | 'convenio'
 
-// Independente de Payment: sessões não geram nem alteram lançamentos financeiros.
+// A sessão Realizada alimenta o lançamento da competência (RF-08); `counted` liga a sessão ao lançamento em que ela já foi somada.
 export type Session = {
   id: string
   tenantId: string
@@ -83,6 +83,8 @@ export type Session = {
   billing: BillingType
   insurer?: string // obrigatório se billing === 'convenio'; ausente se particular
   evolution?: string // texto livre: o que aconteceu na sessão
+  value: number // R$ da sessão, maior que zero (RF-12)
+  counted?: { paymentId: string; amount: number } // lançamento onde já foi somada e quanto entrou nele
   createdAt: string
   updatedAt: string
 }
