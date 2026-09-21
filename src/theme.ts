@@ -89,6 +89,10 @@ export const theme = createTheme(
       },
       MuiButton: { defaultProps: { disableElevation: true } },
       MuiTextField: { defaultProps: { size: 'small' } },
+      // Campo com fundo próprio: sem isso ele herda a cor do que está atrás (bege na página, branco no diálogo).
+      MuiOutlinedInput: {
+        styleOverrides: { root: ({ theme }) => ({ backgroundColor: theme.palette.background.paper }) },
+      },
       MuiDataGrid: {
         defaultProps: { density: 'standard' },
         styleOverrides: {
