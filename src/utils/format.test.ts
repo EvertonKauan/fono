@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatAge, formatCurrency, formatDate, formatPeriod, formatWeekdays, normalizeText, parseMoney } from './format.ts'
+import { formatAge, formatCurrency, formatDate, formatPeriod, billingLabel, formatWeekdays, normalizeText, parseMoney, sessionStatusLabel } from './format.ts'
 
 describe('format', () => {
   it('formata data como dd/mm/aaaa', () => {
@@ -24,6 +24,12 @@ describe('format', () => {
 
   it('normaliza texto sem acentos e maiúsculas', () => {
     expect(normalizeText('LÍVIA Cardoso')).toBe('livia cardoso')
+  })
+
+  it('descreve status e cobrança da sessão', () => {
+    expect(sessionStatusLabel.agendada).toBe('Agendada')
+    expect(billingLabel({ billing: 'particular' })).toBe('Particular')
+    expect(billingLabel({ billing: 'convenio', insurer: 'Convênio Exemplo' })).toBe('Convênio: Convênio Exemplo')
   })
 
   it('interpreta valores digitados em reais', () => {

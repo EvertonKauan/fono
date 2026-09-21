@@ -1,10 +1,10 @@
 import { useState, type ReactNode } from 'react'
 import * as auth from '../services/auth.ts'
-import type { Session } from '../types/domain.ts'
+import type { AuthSession } from '../types/domain.ts'
 import { SessionContext, type SessionValue } from './useSession.ts'
 
 export default function SessionProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(auth.currentSession)
+  const [session, setSession] = useState<AuthSession | null>(auth.currentSession)
 
   const value: SessionValue = {
     session,

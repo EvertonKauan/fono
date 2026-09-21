@@ -40,10 +40,10 @@ Ordem de execução. Cada tarefa entrega o menor incremento utilizável e cita a
 Arquivar paciente, sessões com evolução e cobrança, calendário e anexos. Tudo continua front com mocks. Decisões já tomadas: sessões separadas dos lançamentos mensais (T12/T13 não mudam) e calendário como tela própria, não aba do paciente. Os ids novos usam `newId` (`plan.md` §13).
 
 ## M6 — Arquivar e sessões
-- [ ] **T23** Modelo e dados: `Session` e `Patient.archivedAt` em `types/domain.ts`; tabela `sessions` em `db.ts` com a migração (tabelas ausentes preenchidas pelo seed, sem tocar nas existentes) e teste dela; `services/sessions.ts`; sessões e 1 paciente arquivado no `seed.ts`. *(RF-10, RF-11, RF-12; plan §5, §6, §9)*
-- [ ] **T24** Arquivar: `archivePatient`/`unarchivePatient`; botão "Arquivar paciente" com confirmação e "Desarquivar paciente" no perfil; chip "Arquivado" no cabeçalho e na lista; filtro "Situação" (padrão Ativos) e `filterPatients` com teste; com o filtro "Arquivados", botão "Desarquivar" direto em cada linha e cartão da lista. *(RF-11, RF-02, RF-04)*
-- [ ] **T25** `SessionDialog` compartilhado: data, horário, status, cobrança Particular/Convênio (nome obrigatório), evolução, validações; `fullScreen` abaixo de `sm`. *(RF-12, RF-14)*
-- [ ] **T26** `SessoesTab` e aba "Sessões" entre Anamnese e Prescrições: lista da mais recente para a mais antiga, nova sessão, editar, cobrança e resumo da evolução na linha, estado vazio. *(RF-12, RF-14, RF-04)*
+- [x] **T23** Modelo e dados: `Session` e `Patient.archivedAt` em `types/domain.ts`; tabela `sessions` em `db.ts` com a migração (tabelas ausentes preenchidas pelo seed, sem tocar nas existentes) e teste dela; `services/sessions.ts`; sessões e 1 paciente arquivado no `seed.ts`. *(RF-10, RF-11, RF-12; plan §5, §6, §9)*
+- [x] **T24** Arquivar: `archivePatient`/`unarchivePatient`; botão "Arquivar paciente" com confirmação e "Desarquivar paciente" no perfil; chip "Arquivado" no cabeçalho e na lista; filtro "Situação" (padrão Ativos) e `filterPatients` com teste; com o filtro "Arquivados", botão "Desarquivar" direto em cada linha e cartão da lista. *(RF-11, RF-02, RF-04)*
+- [x] **T25** `SessionDialog` compartilhado: data, horário, status, cobrança Particular/Convênio (nome obrigatório), evolução, validações; `fullScreen` abaixo de `sm`. *(RF-12, RF-14)*
+- [x] **T26** `SessoesTab` e aba "Sessões" entre Anamnese e Prescrições: lista da mais recente para a mais antiga, nova sessão, editar, cobrança e resumo da evolução na linha, estado vazio. *(RF-12, RF-14, RF-04)*
 
 ## M7 — Calendário
 - [ ] **T27** `AppLayout`: navegação Pacientes · Calendário e `--app-bar-height` no lugar de `APP_BAR_HEIGHT`. *(RF-13; plan §7)*

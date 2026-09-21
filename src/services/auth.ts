@@ -1,23 +1,23 @@
-import type { Session } from '../types/domain.ts'
+import type { AuthSession } from '../types/domain.ts'
 import { loadDb } from './db.ts'
 import { getTenant } from './tenants.ts'
 
 // sessionStorage: a sessão sobrevive ao recarregar, mas termina ao fechar a aba
 const SESSION_KEY = 'fono:session'
 
-export function currentSession(): Session | null {
+export function currentSession(): AuthSession | null {
   try {
     const raw = sessionStorage.getItem(SESSION_KEY)
-    return raw ? (JSON.parse(raw) as Session) : null
+    return raw ? (JSON.parse(raw) as AuthSession) : null
   } catch {
     return null
   }
 }
 
-export async function login(username: string, password: string): Promise<Session | null> {
+export async function login(username: string, password: string): Promise<AuthSession | null> {
   const user = loadDb().users.find((u) => u.username === username && u.password === password)
   if (!user) return null
-  const session: Session = {
+  const session: AuthSession = {
     userId: user.id,
     tenantId: user.tenantId,
     username: user.username,

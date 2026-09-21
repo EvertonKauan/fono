@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type { Patient } from '../../types/domain.ts'
-import { filterPatients } from './patientRows.ts'
+import { filterPatients, type PatientFilters } from './patientRows.ts'
 
-const make = (id: string, fullName: string, kind: Patient['kind']): Patient => ({
+const make = (id: string, fullName: string, kind: Patient['kind'], archivedAt?: string): Patient => ({
   id,
   tenantId: 't',
   kind,
@@ -11,27 +11,42 @@ const make = (id: string, fullName: string, kind: Patient['kind']): Patient => (
   guardians: [],
   visit: { fee: 100, weekdays: [] },
   createdAt: '2026-01-01T00:00:00.000Z',
+  archivedAt,
 })
 
 const patients = [
   make('1', 'Lívia Cardoso', 'crianca'),
   make('2', 'Carlos Menezes', 'adulto'),
   make('3', 'Sandra Pacheco', 'adulto'),
+  make('4', 'Otávio Ramos', 'adulto', '2026-08-30T15:00:00.000Z'),
 ]
-const pending = new Set(['2'])
-const all = { query: '', kind: 'todos', onlyPending: false } as const
+const pending = new Set(['2', '4'])
+const all: PatientFilters = { query: '', kind: 'todos', onlyPending: false, status: 'todos' }
+const ids = (filters: Partial<PatientFilters>) => filterPatients(patients, pending, { ...all, ...filters }).map((p) => p.id)
 
 describe('filterPatients', () => {
   it('busca sem diferenciar maiúsculas nem acentos', () => {
-    expect(filterPatients(patients, pending, { ...all, query: 'LIVIA' }).map((p) => p.id)).toEqual(['1'])
-    expect(filterPatients(patients, pending, { ...all, query: 'menezes ' }).map((p) => p.id)).toEqual(['2'])
+    expect(ids({ query: 'LIVIA' })).toEqual(['1'])
+    expect(ids({ query: 'menezes ' })).toEqual(['2'])
+    expect(ids({ query: 'otavio' })).toEqual(['4'])
   })
 
   it('filtra por tipo', () => {
-    expect(filterPatients(patients, pending, { ...all, kind: 'adulto' })).toHaveLength(2)
+    expect(ids({ kind: 'adulto' })).toEqual(['2', '3', '4'])
   })
 
   it('mostra só pacientes com lançamento pendente', () => {
-    expect(filterPatients(patients, pending, { ...all, onlyPending: true }).map((p) => p.id)).toEqual(['2'])
+    expect(ids({ onlyPending: true })).toEqual(['2', '4'])
+  })
+
+  it('situação: ativos (padrão), arquivados ou todos', () => {
+    expect(ids({ status: 'ativos' })).toEqual(['1', '2', '3'])
+    expect(ids({ status: 'arquivados' })).toEqual(['4'])
+    expect(ids({ status: 'todos' })).toEqual(['1', '2', '3', '4'])
+  })
+
+  it('a situação combina com os demais filtros', () => {
+    expect(ids({ status: 'ativos', onlyPending: true })).toEqual(['2'])
+    expect(ids({ status: 'arquivados', kind: 'crianca' })).toEqual([])
   })
 })

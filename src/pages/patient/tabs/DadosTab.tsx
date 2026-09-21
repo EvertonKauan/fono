@@ -78,6 +78,7 @@ export default function DadosTab({ patient, onSaved }: Props) {
     setSaving(true)
     const saved = await savePatient(tenantId, {
       ...draft,
+      archivedAt: patient.archivedAt,
       fullName: draft.fullName.trim(),
       birthDate: birth.format(ISO),
       gender: blankToUndefined(draft.gender),

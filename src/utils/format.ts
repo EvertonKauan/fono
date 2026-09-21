@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import type { PatientKind, PaymentMethod } from '../types/domain.ts'
+import type { PatientKind, PaymentMethod, Session, SessionStatus } from '../types/domain.ts'
 
 const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
 
@@ -50,3 +50,14 @@ export function parseMoney(text: string) {
   const value = Number(`${whole || '0'}.${cents.length <= 2 ? cents || '0' : '0'}`)
   return Number.isFinite(value) ? value : 0
 }
+
+export const sessionStatusLabel: Record<SessionStatus, string> = {
+  agendada: 'Agendada',
+  realizada: 'Realizada',
+  cancelada: 'Cancelada',
+}
+
+// "Particular" ou "Convênio: <nome>"
+export const billingLabel = (session: Pick<Session, 'billing' | 'insurer'>) =>
+  session.billing === 'convenio' ? `Convênio: ${session.insurer ?? ''}`.trim() : 'Particular'
+

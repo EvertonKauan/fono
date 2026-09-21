@@ -7,7 +7,7 @@ export type Tenant = {
 // só mock; na Fase 2 a autenticação passa a ser do back-end
 export type User = { id: string; tenantId: string; username: string; password: string }
 
-export type Session = { userId: string; tenantId: string; username: string; tenant: Tenant }
+export type AuthSession = { userId: string; tenantId: string; username: string; tenant: Tenant }
 
 export type PatientKind ='crianca' | 'adulto'
 
@@ -31,6 +31,7 @@ export type Patient = {
   financialGuardian?: { name: string; cpf: string } // obrigatório se menor
   visit: { fee: number; weekdays: number[]; time?: string } // 0=dom … 6=sáb
   createdAt: string
+  archivedAt?: string // instante ISO; ausente = ativo
 }
 
 export type AnamneseAnswer = string | { yes: boolean; detail?: string }
@@ -66,4 +67,22 @@ export type Payment = {
   status: PaymentStatus
   paidAt?: string
   method?: PaymentMethod
+}
+
+export type SessionStatus = 'agendada' | 'realizada' | 'cancelada'
+export type BillingType = 'particular' | 'convenio'
+
+// Independente de Payment: sessões não geram nem alteram lançamentos financeiros.
+export type Session = {
+  id: string
+  tenantId: string
+  patientId: string
+  date: string // ISO yyyy-mm-dd
+  time?: string // HH:mm
+  status: SessionStatus
+  billing: BillingType
+  insurer?: string // obrigatório se billing === 'convenio'; ausente se particular
+  evolution?: string // texto livre: o que aconteceu na sessão
+  createdAt: string
+  updatedAt: string
 }

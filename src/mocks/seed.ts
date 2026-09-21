@@ -1,5 +1,5 @@
 import type { Db } from '../services/db.ts'
-import type { Patient, Payment, PaymentMethod } from '../types/domain.ts'
+import type { Patient, Payment, PaymentMethod, Session, SessionStatus } from '../types/domain.ts'
 
 const CLAU = 'claudionaria'
 const DEMO = 'demo'
@@ -39,6 +39,28 @@ const pending = (
   amount: sessions * patient.visit.fee,
   status: 'pendente',
 })
+
+const session = (
+  n: number,
+  patient: Patient,
+  date: string,
+  time: string,
+  status: SessionStatus,
+  extra: Partial<Session> = {},
+): Session => ({
+  id: `ses-${String(n).padStart(3, '0')}`,
+  tenantId: patient.tenantId,
+  patientId: patient.id,
+  date,
+  time,
+  status,
+  billing: 'particular',
+  createdAt: `${date}T12:00:00.000Z`,
+  updatedAt: `${date}T12:00:00.000Z`,
+  ...extra,
+})
+
+const insurer = { billing: 'convenio', insurer: 'Convênio Exemplo Saúde' } as const
 
 // Todos os dados são fictícios; CPFs gerados apenas com dígitos verificadores válidos.
 export function createSeed(): Db {
@@ -185,6 +207,25 @@ export function createSeed(): Db {
     createdAt: '2026-06-02T12:00:00.000Z',
   }
 
+  const otavio: Patient = {
+    id: 'p-009',
+    tenantId: CLAU,
+    kind: 'adulto',
+    fullName: 'Otávio Ramos Vieira',
+    birthDate: '1971-06-11',
+    gender: 'Masculino',
+    city: 'Campinas',
+    phone: '(19) 99999-0109',
+    referredBy: 'Neurologista',
+    schooling: 'Ensino médio completo',
+    occupation: 'Motorista',
+    guardians: [],
+    cpf: '93471632522',
+    visit: { fee: 180, weekdays: [2], time: '20:00' },
+    createdAt: '2026-03-01T13:00:00.000Z',
+    archivedAt: '2026-08-30T15:00:00.000Z',
+  }
+
   const ana: Patient = {
     id: 'p-101',
     tenantId: DEMO,
@@ -229,7 +270,7 @@ export function createSeed(): Db {
       { id: 'u-clau', tenantId: CLAU, username: 'clau', password: '123' },
       { id: 'u-demo', tenantId: DEMO, username: 'demo', password: '123' },
     ],
-    patients: [miguel, helena, davi, beatriz, carlos, sandra, rafael, livia, ana, pedro],
+    patients: [miguel, helena, davi, beatriz, carlos, sandra, rafael, livia, otavio, ana, pedro],
     payments: [
       paid('pay-001', CLAU, miguel, '2026-05', 8, '2026-06-05', 'pix'),
       paid('pay-002', CLAU, miguel, '2026-06', 8, '2026-07-06', 'pix'),
@@ -260,6 +301,56 @@ export function createSeed(): Db {
       paid('pay-101', DEMO, ana, '2026-08', 4, '2026-09-02', 'pix'),
       pending('pay-102', DEMO, ana, '2026-09', 3),
       paid('pay-103', DEMO, pedro, '2026-09', 3, '2026-09-15', 'cartao'),
+      paid('pay-027', CLAU, otavio, '2026-08', 4, '2026-09-02', 'pix'),
+    ],
+    // Hoje do mock: 20/09/2026. Passadas = realizada/cancelada; futuras = agendada.
+    sessions: [
+      session(1, miguel, '2026-09-01', '15:00', 'realizada', { evolution: 'Iniciamos com vibração de língua e sopro. Colaborou bem; troca o /r/ na maioria das palavras.' }),
+      session(2, miguel, '2026-09-03', '15:00', 'realizada', { evolution: 'Pares mínimos (r/l): acertou cerca de metade. Combinado treino diário de 10 minutos em casa.' }),
+      session(3, miguel, '2026-09-08', '15:00', 'realizada', { ...insurer, evolution: 'Leitura de frases curtas em voz alta. Melhor articulação do /l/ no início das palavras.' }),
+      session(4, miguel, '2026-09-10', '15:00', 'realizada', { ...insurer, evolution: 'Entregue a nova prescrição de exercícios. A mãe relatou treino em casa quase todos os dias.' }),
+      session(5, miguel, '2026-09-15', '15:00', 'cancelada', { evolution: 'Cancelada pela família: criança com febre. Reagendar.' }),
+      session(6, miguel, '2026-09-17', '15:00', 'realizada', { evolution: 'Retomada após a semana sem sessão. Manteve os ganhos do /l/; /r/ ainda em treino.' }),
+      session(7, miguel, '2026-09-22', '15:00', 'agendada'),
+      session(8, miguel, '2026-09-24', '15:00', 'agendada', insurer),
+      session(9, miguel, '2026-09-29', '15:00', 'agendada'),
+      session(10, helena, '2026-09-07', '09:00', 'realizada', { evolution: 'Atividade lúdica com figuras: nomeou cerca de 20 objetos, com ajuda em alguns.' }),
+      session(11, helena, '2026-09-14', '09:00', 'realizada', { evolution: 'Faz de conta com bonecos; ampliou frases de duas palavras.' }),
+      session(12, helena, '2026-09-21', '09:00', 'agendada'),
+      session(13, helena, '2026-09-28', '09:00', 'agendada'),
+      session(14, davi, '2026-09-02', '16:30', 'realizada', { evolution: 'Consciência fonológica (rimas e sílabas). Dificuldade com sílabas complexas.' }),
+      session(15, davi, '2026-09-09', '16:30', 'realizada', { evolution: 'Leitura de texto curto com boa fluência; ainda omite sons finais na escrita.' }),
+      session(16, davi, '2026-09-16', '16:30', 'realizada'),
+      session(17, davi, '2026-09-23', '16:30', 'agendada'),
+      session(18, davi, '2026-09-30', '16:30', 'agendada'),
+      session(19, beatriz, '2026-09-04', '14:00', 'realizada', { evolution: 'Conversa sobre a rotina escolar e treino de fala em público.' }),
+      session(20, beatriz, '2026-09-11', '14:00', 'realizada'),
+      session(21, beatriz, '2026-09-18', '14:00', 'realizada', { evolution: 'Apresentação simulada: velocidade de fala adequada, boa projeção de voz.' }),
+      session(22, beatriz, '2026-09-25', '14:00', 'agendada'),
+      session(23, carlos, '2026-09-01', '19:00', 'realizada', { ...insurer, evolution: 'Avaliação vocal e orientações de higiene vocal para o uso profissional.' }),
+      session(24, carlos, '2026-09-08', '19:00', 'realizada', { ...insurer, evolution: 'Exercícios de respiração e ressonância. Relata menos cansaço ao fim das aulas.' }),
+      session(25, carlos, '2026-09-15', '19:00', 'realizada', insurer),
+      session(26, carlos, '2026-09-22', '19:00', 'agendada', insurer),
+      session(27, carlos, '2026-09-29', '19:00', 'agendada', insurer),
+      session(28, sandra, '2026-09-03', '10:30', 'realizada', { evolution: 'Treino de deglutição com alimentos pastosos, sem engasgos.' }),
+      session(29, sandra, '2026-09-10', '10:30', 'cancelada', { evolution: 'Paciente avisou que não poderia vir.' }),
+      session(30, sandra, '2026-09-17', '10:30', 'realizada'),
+      session(31, sandra, '2026-09-24', '10:30', 'agendada'),
+      session(32, rafael, '2026-09-02', '18:00', 'realizada', { evolution: 'Exercícios de projeção vocal no trabalho; pausas para hidratação.' }),
+      session(33, rafael, '2026-09-07', '18:00', 'realizada'),
+      session(34, rafael, '2026-09-09', '18:00', 'realizada'),
+      session(35, rafael, '2026-09-14', '18:00', 'realizada', { evolution: 'Rouquidão menos frequente. Mantém a rotina de aquecimento vocal.' }),
+      session(36, rafael, '2026-09-21', '18:00', 'agendada'),
+      session(37, rafael, '2026-09-23', '18:00', 'agendada'),
+      session(38, livia, '2026-09-04', '08:30', 'realizada', { evolution: 'Jogo de sons iniciais; identifica /p/ e /b/.' }),
+      session(39, livia, '2026-09-11', '08:30', 'realizada'),
+      session(40, livia, '2026-09-18', '08:30', 'realizada', { evolution: 'Repetição de palavras com /f/ e /v/. Boa atenção durante toda a sessão.' }),
+      session(41, livia, '2026-09-25', '08:30', 'agendada'),
+      session(42, otavio, '2026-08-25', '20:00', 'realizada', { evolution: 'Última sessão antes do arquivamento; alta combinada com a família.' }),
+      session(43, otavio, '2026-09-22', '20:00', 'agendada'),
+      session(101, ana, '2026-09-16', '11:00', 'realizada', { evolution: 'Sessão de demonstração.' }),
+      session(102, ana, '2026-09-23', '11:00', 'agendada'),
+      session(103, pedro, '2026-09-22', '16:00', 'agendada'),
     ],
     // ids das respostas seguem o schema da anamnese (T14)
     anamneses: [

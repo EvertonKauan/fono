@@ -10,22 +10,31 @@ export type PatientRow = {
   days: string
   fee: number
   pending: boolean
+  archived: boolean
   phone: string
 }
 
-export type PatientFilters = { query: string; kind: PatientKind | 'todos'; onlyPending: boolean }
+export type PatientStatus = 'ativos' | 'arquivados' | 'todos'
+
+export type PatientFilters = {
+  query: string
+  kind: PatientKind | 'todos'
+  onlyPending: boolean
+  status: PatientStatus
+}
 
 export function filterPatients(
   patients: Patient[],
   pendingIds: Set<string>,
-  { query, kind, onlyPending }: PatientFilters,
+  { query, kind, onlyPending, status }: PatientFilters,
 ) {
   const term = normalizeText(query.trim())
   return patients.filter(
     (p) =>
       normalizeText(p.fullName).includes(term) &&
       (kind === 'todos' || p.kind === kind) &&
-      (!onlyPending || pendingIds.has(p.id)),
+      (!onlyPending || pendingIds.has(p.id)) &&
+      (status === 'todos' || (status === 'arquivados') === Boolean(p.archivedAt)),
   )
 }
 
@@ -38,6 +47,7 @@ export function toRow(patient: Patient, pendingIds: Set<string>): PatientRow {
     days: formatWeekdays(patient.visit.weekdays),
     fee: patient.visit.fee,
     pending: pendingIds.has(patient.id),
+    archived: Boolean(patient.archivedAt),
     phone: patient.phone ?? '',
   }
 }

@@ -7,20 +7,24 @@ import Tab from '@mui/material/Tab'
 import Tabs from '@mui/material/Tabs'
 import Typography from '@mui/material/Typography'
 import { useTenantId } from '../../auth/useSession.ts'
-import { getPatient } from '../../services/patients.ts'
+import Toast from '../../components/Toast.tsx'
+import { archivePatient, getPatient, unarchivePatient } from '../../services/patients.ts'
 import { listPayments } from '../../services/payments.ts'
 import type { Patient, Payment } from '../../types/domain.ts'
+import ArchiveDialog from './ArchiveDialog.tsx'
 import PatientHeader from './PatientHeader.tsx'
 import AnamneseTab from './tabs/AnamneseTab.tsx'
 import DadosTab from './tabs/DadosTab.tsx'
 import FinanceiroTab from './tabs/FinanceiroTab.tsx'
 import PrescricoesTab from './tabs/PrescricoesTab.tsx'
 import RelatorioTab from './tabs/RelatorioTab.tsx'
+import SessoesTab from './tabs/SessoesTab.tsx'
 import { hasPending } from './tabs/financeiro.ts'
 
 const TABS = [
   { key: 'dados', label: 'Dados' },
   { key: 'anamnese', label: 'Anamnese' },
+  { key: 'sessoes', label: 'Sessões' },
   { key: 'prescricoes', label: 'Prescrições' },
   { key: 'financeiro', label: 'Financeiro' },
   { key: 'relatorio', label: 'Relatório' },
@@ -40,6 +44,8 @@ export default function PatientProfile() {
   const tenantId = useTenantId()
   const [params, setParams] = useSearchParams()
   const [state, setState] = useState<State>()
+  const [archiving, setArchiving] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
 
   useEffect(() => {
     let active = true
@@ -70,10 +76,25 @@ export default function PatientProfile() {
   const setPatient = (next: Patient) => setState({ patient: next, payments })
   const setPayments = (next: Payment[]) => setState({ patient, payments: next })
 
+  async function archive() {
+    setPatient(await archivePatient(tenantId, patient!.id))
+    setArchiving(false)
+    setToast('Paciente arquivado.')
+  }
+
+  async function unarchive() {
+    setPatient(await unarchivePatient(tenantId, patient!.id))
+    setToast('Paciente desarquivado.')
+  }
+
   return (
     <Stack>
       <Box sx={{ position: 'sticky', top: APP_BAR_HEIGHT, zIndex: (theme) => theme.zIndex.appBar - 1, bgcolor: 'background.default' }}>
-        <PatientHeader patient={patient} pending={hasPending(payments)} />
+        <PatientHeader
+          patient={patient}
+          pending={hasPending(payments)}
+          onToggleArchive={patient.archivedAt ? unarchive : () => setArchiving(true)}
+        />
         <Tabs
           value={tab}
           onChange={(_, value: TabKey) => setParams({ aba: value }, { replace: true })}
@@ -89,6 +110,7 @@ export default function PatientProfile() {
       <Box role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} sx={{ pt: 2 }}>
         {tab === 'dados' && <DadosTab patient={patient} onSaved={setPatient} />}
         {tab === 'anamnese' && <AnamneseTab patient={patient} />}
+        {tab === 'sessoes' && <SessoesTab patient={patient} />}
         {tab === 'prescricoes' && <PrescricoesTab patient={patient} />}
         {tab === 'financeiro' && (
           <FinanceiroTab
@@ -100,6 +122,8 @@ export default function PatientProfile() {
         )}
         {tab === 'relatorio' && <RelatorioTab patient={patient} payments={payments} />}
       </Box>
+      {archiving && <ArchiveDialog patientName={patient.fullName} onClose={() => setArchiving(false)} onConfirm={archive} />}
+      <Toast message={toast} onClose={() => setToast(null)} />
     </Stack>
   )
 }

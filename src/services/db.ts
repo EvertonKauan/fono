@@ -1,4 +1,4 @@
-import type { Anamnese, Patient, Payment, Prescription, Tenant, User } from '../types/domain.ts'
+import type { Anamnese, Patient, Payment, Prescription, Session, Tenant, User } from '../types/domain.ts'
 import { createSeed } from '../mocks/seed.ts'
 
 type TenantTables = {
@@ -6,6 +6,7 @@ type TenantTables = {
   anamneses: Anamnese
   prescriptions: Prescription
   payments: Payment
+  sessions: Session
 }
 type TenantTable = keyof TenantTables
 
@@ -14,12 +15,18 @@ type TenantDb = { [K in TenantTable]: TenantTables[K][] }
 export type Db = { tenants: Tenant[]; users: User[] } & TenantDb
 
 const STORAGE_KEY = 'fono:db'
-const TABLES: (keyof Db)[] = ['tenants', 'users', 'patients', 'anamneses', 'prescriptions', 'payments']
+const LEGACY_TABLES = ['tenants', 'users', 'patients', 'anamneses', 'prescriptions', 'payments'] as const
 
-function isDb(value: unknown): value is Db {
-  if (typeof value !== 'object' || value === null) return false
+// Tabelas novas ausentes (hoje só `sessions`) são preenchidas pelo seed; as existentes nunca são tocadas.
+// Só um objeto ilegível (sem as tabelas originais) devolve null e é recriado por inteiro.
+export function migrateDb(value: unknown): { db: Db; changed: boolean } | null {
+  if (typeof value !== 'object' || value === null) return null
   const record = value as Record<string, unknown>
-  return TABLES.every((table) => Array.isArray(record[table]))
+  if (!LEGACY_TABLES.every((table) => Array.isArray(record[table]))) return null
+  if (Array.isArray(record.sessions)) return { db: record as unknown as Db, changed: false }
+  const patientIds = new Set((record.patients as Patient[]).map((patient) => patient.id))
+  const sessions = createSeed().sessions.filter((session) => patientIds.has(session.patientId))
+  return { db: { ...record, sessions } as unknown as Db, changed: true }
 }
 
 export function saveDb(db: Db) {
@@ -30,8 +37,17 @@ export function loadDb(): Db {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
-      const parsed: unknown = JSON.parse(raw)
-      if (isDb(parsed)) return parsed
+      const migrated = migrateDb(JSON.parse(raw))
+      if (migrated) {
+        if (migrated.changed) {
+          try {
+            saveDb(migrated.db)
+          } catch {
+            // sem gravar agora; a migração se repete na próxima carga
+          }
+        }
+        return migrated.db
+      }
     }
   } catch {
     // dados ilegíveis: recria a partir do seed

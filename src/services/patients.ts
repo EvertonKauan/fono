@@ -29,3 +29,13 @@ export async function savePatient(tenantId: string, patient: Patient): Promise<P
   upsertRow('patients', tenantId, patient)
   return patient
 }
+
+async function setArchived(tenantId: string, id: string, archivedAt: string | undefined): Promise<Patient> {
+  const patient = await getPatient(tenantId, id)
+  if (!patient) throw new Error('Paciente não encontrado.')
+  return savePatient(tenantId, { ...patient, archivedAt })
+}
+
+// Arquivar não apaga nada: só marca o paciente.
+export const archivePatient = (tenantId: string, id: string) => setArchived(tenantId, id, new Date().toISOString())
+export const unarchivePatient = (tenantId: string, id: string) => setArchived(tenantId, id, undefined)

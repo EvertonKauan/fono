@@ -12,22 +12,37 @@ import { useTheme } from '@mui/material/styles'
 import Add from '@mui/icons-material/Add'
 import Search from '@mui/icons-material/Search'
 import { useTenantId } from '../../auth/useSession.ts'
-import { listPatients } from '../../services/patients.ts'
+import Toast from '../../components/Toast.tsx'
+import { listPatients, unarchivePatient } from '../../services/patients.ts'
 import { listPayments } from '../../services/payments.ts'
 import type { Patient } from '../../types/domain.ts'
 import NewPatientDialog from './NewPatientDialog.tsx'
 import PatientCards from './PatientCards.tsx'
 import PatientsTable from './PatientsTable.tsx'
-import { filterPatients, toRow, type PatientFilters } from './patientRows.ts'
+import { filterPatients, toRow, type PatientFilters, type PatientStatus } from './patientRows.ts'
 
 type Data = { patients: Patient[]; pendingIds: Set<string> }
+
+function emptyMessage(data: Data, status: PatientStatus) {
+  const archived = data.patients.filter((p) => p.archivedAt).length
+  const active = data.patients.length - archived
+  if (status === 'arquivados' && archived === 0) return 'Nenhum paciente arquivado.'
+  if (status === 'ativos' && active === 0) {
+    return archived > 0
+      ? 'Nenhum paciente ativo. Use o filtro “Situação” para ver os arquivados.'
+      : 'Nenhum paciente cadastrado. Use “Novo paciente” para começar.'
+  }
+  return 'Nenhum paciente encontrado com esses filtros.'
+}
 
 export default function PatientsPage() {
   const tenantId = useTenantId()
   const isDesktop = useMediaQuery(useTheme().breakpoints.up('md'))
   const [data, setData] = useState<Data | null>(null)
-  const [filters, setFilters] = useState<PatientFilters>({ query: '', kind: 'todos', onlyPending: false })
+  const [version, setVersion] = useState(0)
+  const [filters, setFilters] = useState<PatientFilters>({ query: '', kind: 'todos', onlyPending: false, status: 'ativos' })
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
 
   useEffect(() => {
     let active = true
@@ -39,7 +54,7 @@ export default function PatientsPage() {
     return () => {
       active = false
     }
-  }, [tenantId])
+  }, [tenantId, version])
 
   const rows = useMemo(() => {
     if (!data) return []
@@ -47,6 +62,15 @@ export default function PatientsPage() {
       .map((patient) => toRow(patient, data.pendingIds))
       .sort((a, b) => a.fullName.localeCompare(b.fullName, 'pt-BR'))
   }, [data, filters])
+
+  const onUnarchive =
+    filters.status === 'arquivados'
+      ? async (id: string) => {
+          await unarchivePatient(tenantId, id)
+          setVersion((v) => v + 1)
+          setToast('Paciente desarquivado.')
+        }
+      : undefined
 
   return (
     <Stack spacing={2}>
@@ -75,7 +99,7 @@ export default function PatientsPage() {
             },
           }}
         />
-        <Stack direction="row" alignItems="center" spacing={2}>
+        <Stack direction="row" spacing={2}>
           <TextField
             select
             label="Tipo"
@@ -88,18 +112,30 @@ export default function PatientsPage() {
             <MenuItem value="crianca">Criança</MenuItem>
             <MenuItem value="adulto">Adulto</MenuItem>
           </TextField>
-          <FormControlLabel
-            label="Pagamento pendente"
-            sx={{ mr: 0 }}
-            control={
-              <Checkbox
-                name="pendentes"
-                checked={filters.onlyPending}
-                onChange={(event) => setFilters({ ...filters, onlyPending: event.target.checked })}
-              />
-            }
-          />
+          <TextField
+            select
+            label="Situação"
+            name="situacao"
+            value={filters.status}
+            onChange={(event) => setFilters({ ...filters, status: event.target.value as PatientStatus })}
+            sx={{ minWidth: 130, flex: { xs: 1, sm: 'none' } }}
+          >
+            <MenuItem value="ativos">Ativos</MenuItem>
+            <MenuItem value="arquivados">Arquivados</MenuItem>
+            <MenuItem value="todos">Todos</MenuItem>
+          </TextField>
         </Stack>
+        <FormControlLabel
+          label="Pagamento pendente"
+          sx={{ mr: 0 }}
+          control={
+            <Checkbox
+              name="pendentes"
+              checked={filters.onlyPending}
+              onChange={(event) => setFilters({ ...filters, onlyPending: event.target.checked })}
+            />
+          }
+        />
       </Stack>
 
       {data && (
@@ -108,18 +144,15 @@ export default function PatientsPage() {
         </Typography>
       )}
       {data && rows.length === 0 ? (
-        <Typography color="text.secondary">
-          {data.patients.length === 0
-            ? 'Nenhum paciente cadastrado. Use “Novo paciente” para começar.'
-            : 'Nenhum paciente encontrado com esses filtros.'}
-        </Typography>
+        <Typography color="text.secondary">{emptyMessage(data, filters.status)}</Typography>
       ) : isDesktop ? (
-        <PatientsTable rows={rows} loading={data === null} />
+        <PatientsTable rows={rows} loading={data === null} onUnarchive={onUnarchive} />
       ) : (
-        data && <PatientCards rows={rows} />
+        data && <PatientCards rows={rows} onUnarchive={onUnarchive} />
       )}
 
       <NewPatientDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
+      <Toast message={toast} onClose={() => setToast(null)} />
     </Stack>
   )
 }

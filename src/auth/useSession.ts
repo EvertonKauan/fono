@@ -1,8 +1,8 @@
 import { createContext, useContext } from 'react'
-import type { Session } from '../types/domain.ts'
+import type { AuthSession } from '../types/domain.ts'
 
 export type SessionValue = {
-  session: Session | null
+  session: AuthSession | null
   login: (username: string, password: string) => Promise<boolean>
   logout: () => void
 }
