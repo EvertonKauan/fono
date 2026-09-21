@@ -3,7 +3,7 @@ import ButtonBase from '@mui/material/ButtonBase'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import CheckCircleOutline from '@mui/icons-material/CheckCircleOutline'
-import { monthLabel, todayIso } from '../../utils/calendar.ts'
+import { fullDayLabel, monthLabel, todayIso } from '../../utils/calendar.ts'
 import { sessionStatusLabel, weekdayLong, weekdayShort } from '../../utils/format.ts'
 import type { CalendarItem } from './calendarItems.ts'
 
@@ -11,13 +11,14 @@ type Props = {
   month: string
   weeks: string[][]
   itemsByDate: Map<string, CalendarItem[]>
-  onOpen: (item: CalendarItem) => void
+  onOpen: (item: CalendarItem, anchor: HTMLElement) => void
+  onOpenDay: (date: string) => void
 }
 
 const border = { border: 1, borderColor: 'divider' } as const
 
 // A partir de md: grade de semanas (domingo a sábado); dias vizinhos ao mês ficam esmaecidos.
-export default function MonthGrid({ month, weeks, itemsByDate, onOpen }: Props) {
+export default function MonthGrid({ month, weeks, itemsByDate, onOpen, onOpenDay }: Props) {
   const today = todayIso()
 
   return (
@@ -48,21 +49,28 @@ export default function MonthGrid({ month, weeks, itemsByDate, onOpen }: Props) 
                     key={date}
                     sx={{ ...border, verticalAlign: 'top', height: 112, p: 0.5, bgcolor: inMonth ? 'background.paper' : 'background.default' }}
                   >
-                    <Typography
-                      component="div"
-                      variant="caption"
-                      sx={{ mb: 0.25, fontWeight: isToday ? 700 : 400, color: isToday ? 'primary.main' : inMonth ? 'text.primary' : 'text.secondary' }}
+                    <ButtonBase
+                      onClick={() => onOpenDay(date)}
+                      title={`Ver dia ${fullDayLabel(date)}`}
+                      aria-label={`Ver dia ${fullDayLabel(date)}`}
+                      sx={{ display: 'block', mb: 0.25, px: 0.5, borderRadius: 0.5, '&:hover, &:focus-visible': { bgcolor: 'action.hover' } }}
                     >
-                      {Number(date.slice(8))}
-                      {isToday && ' · hoje'}
-                    </Typography>
+                      <Typography
+                        component="span"
+                        variant="caption"
+                        sx={{ fontWeight: isToday ? 700 : 400, color: isToday ? 'primary.main' : inMonth ? 'text.primary' : 'text.secondary' }}
+                      >
+                        {Number(date.slice(8))}
+                        {isToday && ' · hoje'}
+                      </Typography>
+                    </ButtonBase>
                     <Stack spacing={0.25}>
                       {(itemsByDate.get(date) ?? []).map(({ session, patientName }) => {
                         const label = `${session.time ?? 'Sem horário'} ${patientName} — ${sessionStatusLabel[session.status]}`
                         return (
                           <ButtonBase
                             key={session.id}
-                            onClick={() => onOpen({ session, patientName })}
+                            onClick={(event) => onOpen({ session, patientName }, event.currentTarget)}
                             title={label}
                             aria-label={label}
                             sx={{

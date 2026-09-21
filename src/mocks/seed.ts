@@ -348,6 +348,7 @@ export function createSeed(): Db {
       session(41, livia, '2026-09-25', '08:30', 'agendada'),
       session(42, otavio, '2026-08-25', '20:00', 'realizada', { evolution: 'Última sessão antes do arquivamento; alta combinada com a família.' }),
       session(43, otavio, '2026-09-22', '20:00', 'agendada'),
+      session(44, davi, '2026-09-22', '15:00', 'agendada'), // mesmo horário de Miguel (ses-007)
       session(101, ana, '2026-09-16', '11:00', 'realizada', { evolution: 'Sessão de demonstração.' }),
       session(102, ana, '2026-09-23', '11:00', 'agendada'),
       session(103, pedro, '2026-09-22', '16:00', 'agendada'),

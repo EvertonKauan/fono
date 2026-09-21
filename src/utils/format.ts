@@ -61,3 +61,4 @@ export const sessionStatusLabel: Record<SessionStatus, string> = {
 export const billingLabel = (session: Pick<Session, 'billing' | 'insurer'>) =>
   session.billing === 'convenio' ? `Convênio: ${session.insurer ?? ''}`.trim() : 'Particular'
 
+export const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1)
