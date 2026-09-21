@@ -1,5 +1,6 @@
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import Alert from '@mui/material/Alert'
+import Autocomplete from '@mui/material/Autocomplete'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Dialog from '@mui/material/Dialog'
@@ -14,7 +15,6 @@ import Radio from '@mui/material/Radio'
 import RadioGroup from '@mui/material/RadioGroup'
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
-import Typography from '@mui/material/Typography'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { useTheme } from '@mui/material/styles'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
@@ -23,26 +23,36 @@ import { useTenantId } from '../auth/useSession.ts'
 import AttachmentsField from './AttachmentsField.tsx'
 import { useAttachmentDraft } from './useAttachmentDraft.ts'
 import { createSession, saveSession, type NewSession } from '../services/sessions.ts'
-import type { BillingType, Session, SessionStatus } from '../types/domain.ts'
+import type { BillingType, Patient, Session, SessionStatus } from '../types/domain.ts'
 import { sessionStatusLabel } from '../utils/format.ts'
 import { newId } from '../utils/id.ts'
 import { SAVE_ERROR } from '../utils/messages.ts'
+import { patientOptions } from './patientOptions.ts'
 
-type Props = {
-  patientId: string
-  patientName: string
+// Paciente fixo (aba Sessões e edição) ou, ao criar pelo calendário, escolhido num campo de busca entre os `patients` recebidos.
+type Props = (
+  | { patientId: string; patientName: string }
+  | { patients: Patient[] }
+) & {
   session?: Session // ausente = nova sessão
-  defaultTime?: string // sugestão para nova sessão (horário de atendimento do paciente)
+  initialDate?: string // yyyy-mm-dd; padrão: hoje
+  initialTime?: string // HH:mm; em nova sessão com paciente escolhido, sem ele o dialog sugere o horário de atendimento do paciente
   onClose: () => void
   onSaved: () => Promise<void>
 }
 
 // Compartilhado entre a aba Sessões e o calendário. Montado só enquanto aberto: o estado é descartado ao fechar.
-export default function SessionDialog({ patientId, patientName, session, defaultTime, onClose, onSaved }: Props) {
+export default function SessionDialog(props: Props) {
+  const { session, initialDate, initialTime, onClose, onSaved } = props
   const tenantId = useTenantId()
   const fullScreen = useMediaQuery(useTheme().breakpoints.down('sm'))
-  const [date, setDate] = useState<Dayjs | null>(() => dayjs(session?.date))
-  const [time, setTime] = useState(session ? (session.time ?? '') : (defaultTime ?? ''))
+  const choices = 'patients' in props ? patientOptions(props.patients, tenantId) : null
+  const [chosen, setChosen] = useState<Patient | null>(null)
+  const patientInput = useRef<HTMLInputElement>(null)
+  const [timeTouched, setTimeTouched] = useState(false)
+  const patientId = 'patients' in props ? chosen?.id : props.patientId
+  const [date, setDate] = useState<Dayjs | null>(() => dayjs(session?.date ?? initialDate))
+  const [time, setTime] = useState(session ? (session.time ?? '') : (initialTime ?? ''))
   const [status, setStatus] = useState<SessionStatus>(session?.status ?? 'agendada')
   const [billing, setBilling] = useState<BillingType>(session?.billing ?? 'particular')
   const [insurer, setInsurer] = useState(session?.insurer ?? '')
@@ -59,10 +69,15 @@ export default function SessionDialog({ patientId, patientName, session, default
   const dateValid = date !== null && date.isValid()
   const insurerMissing = billing === 'convenio' && insurer.trim() === ''
 
+  function choosePatient(patient: Patient | null) {
+    setChosen(patient)
+    if (patient && !timeTouched && !initialTime) setTime(patient.visit.time ?? '')
+  }
+
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     setSubmitted(true)
-    if (!date || !dateValid || insurerMissing) return
+    if (!patientId || !date || !dateValid || insurerMissing) return
     setSaving(true)
     setError(null)
     try {
@@ -92,12 +107,53 @@ export default function SessionDialog({ patientId, patientName, session, default
   }
 
   return (
-    <Dialog open onClose={onClose} fullScreen={fullScreen} fullWidth maxWidth="sm" aria-labelledby="sessao-titulo">
+    <Dialog
+      open
+      onClose={onClose}
+      fullScreen={fullScreen}
+      fullWidth
+      maxWidth="sm"
+      aria-labelledby="sessao-titulo"
+      // o conteúdo fica invisível durante o fade e não aceita foco antes do fim dele (autoFocus não pega)
+      slotProps={{ transition: { onEntered: () => patientInput.current?.focus() } }}
+    >
       <Box component="form" noValidate onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1, minHeight: 0 }}>
         <DialogTitle id="sessao-titulo">{session ? 'Editar sessão' : 'Nova sessão'}</DialogTitle>
         <DialogContent>
           <Stack spacing={2.5} sx={{ pt: 0.5 }}>
-            <Typography color="text.secondary">Paciente: {patientName}</Typography>
+            {choices ? (
+              <Autocomplete
+                autoHighlight
+                options={choices}
+                value={chosen}
+                onChange={(_, patient) => choosePatient(patient)}
+                getOptionLabel={(patient) => patient.fullName}
+                isOptionEqualToValue={(a, b) => a.id === b.id}
+                filterOptions={(all, { inputValue }) => patientOptions(all, tenantId, inputValue)}
+                noOptionsText={choices.length === 0 ? 'Nenhum paciente ativo.' : 'Nenhum paciente encontrado.'}
+                clearText="Limpar"
+                openText="Abrir"
+                closeText="Fechar"
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Paciente"
+                    name="patient"
+                    required
+                    inputRef={patientInput}
+                    error={submitted && !chosen}
+                    helperText={submitted && !chosen ? 'Escolha o paciente.' : undefined}
+                  />
+                )}
+              />
+            ) : (
+              <TextField
+                label="Paciente"
+                name="patient"
+                value={'patientName' in props ? props.patientName : ''}
+                slotProps={{ input: { readOnly: true } }}
+              />
+            )}
             {error && <Alert severity="error">{error}</Alert>}
 
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' }, gap: 2 }}>
@@ -119,7 +175,10 @@ export default function SessionDialog({ patientId, patientName, session, default
                 name="time"
                 type="time"
                 value={time}
-                onChange={(event) => setTime(event.target.value)}
+                onChange={(event) => {
+                  setTime(event.target.value)
+                  setTimeTouched(true)
+                }}
                 slotProps={{ inputLabel: { shrink: true } }}
               />
             </Box>

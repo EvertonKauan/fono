@@ -113,7 +113,7 @@ export default function SessoesTab({ patient }: { patient: Patient }) {
           patientId={patient.id}
           patientName={patient.fullName}
           session={dialog.session}
-          defaultTime={patient.visit.time}
+          initialTime={patient.visit.time}
           onClose={() => setDialog(null)}
           onSaved={saved}
         />

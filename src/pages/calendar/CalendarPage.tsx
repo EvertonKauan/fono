@@ -9,11 +9,13 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 import Typography from '@mui/material/Typography'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { useTheme } from '@mui/material/styles'
+import Add from '@mui/icons-material/Add'
 import ChevronLeft from '@mui/icons-material/ChevronLeft'
 import ChevronRight from '@mui/icons-material/ChevronRight'
 import { useTenantId } from '../../auth/useSession.ts'
 import SessionDialog from '../../components/SessionDialog.tsx'
 import Toast from '../../components/Toast.tsx'
+import type { Patient } from '../../types/domain.ts'
 import { listPatients } from '../../services/patients.ts'
 import { listSessionsBetween } from '../../services/sessions.ts'
 import {
@@ -55,17 +57,21 @@ export default function CalendarPage() {
   const view = parseView(params.get('visao'))
   const date = parseDate(params.get('data'))
   const [items, setItems] = useState<CalendarItem[]>()
+  const [patients, setPatients] = useState<Patient[]>()
   const [version, setVersion] = useState(0)
   const [preview, setPreview] = useState<{ item: CalendarItem; anchor: HTMLElement } | null>(null)
   const [editing, setEditing] = useState<CalendarItem | null>(null)
+  const [creating, setCreating] = useState<{ date: string; time?: string } | null>(null)
   const [toast, setToast] = useState<string | null>(null)
 
   const { from, to } = useMemo(() => viewRange(date, view), [date, view])
 
   useEffect(() => {
     let active = true
-    Promise.all([listPatients(tenantId), listSessionsBetween(tenantId, from, to)]).then(([patients, sessions]) => {
-      if (active) setItems(toCalendarItems(sessions, patients))
+    Promise.all([listPatients(tenantId), listSessionsBetween(tenantId, from, to)]).then(([all, sessions]) => {
+      if (!active) return
+      setPatients(all)
+      setItems(toCalendarItems(sessions, all))
     })
     return () => {
       active = false
@@ -80,6 +86,7 @@ export default function CalendarPage() {
 
   async function saved() {
     setEditing(null)
+    setCreating(null)
     setVersion((v) => v + 1)
     setToast('Sessão salva.')
   }
@@ -94,10 +101,16 @@ export default function CalendarPage() {
   }))
   const openPreview = (item: CalendarItem, anchor: HTMLElement) => setPreview({ item, anchor })
   const openDay = (day: string) => goTo('dia', day)
+  const createAt = (day: string, time?: string) => setCreating({ date: day, time })
 
   return (
     <Stack spacing={2}>
-      <Typography variant="h1">Calendário</Typography>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" gap={2}>
+        <Typography variant="h1">Calendário</Typography>
+        <Button variant="contained" startIcon={<Add />} disabled={!patients} onClick={() => setCreating({ date: todayIso() })}>
+          Nova sessão
+        </Button>
+      </Stack>
 
       <Stack direction="row" alignItems="center" flexWrap="wrap" columnGap={1} rowGap={1.5}>
         <Stack direction="row" alignItems="center" gap={1} sx={{ flex: '1 1 auto', minWidth: 0 }}>
@@ -135,11 +148,11 @@ export default function CalendarPage() {
       {items && (
         <Box>
           {view === 'dia' ? (
-            <TimeGrid label={label} dates={[date]} items={items} onOpen={openPreview} />
+            <TimeGrid label={label} dates={[date]} items={items} onOpen={openPreview} onCreate={createAt} />
           ) : view === 'semana' && isDesktop ? (
-            <TimeGrid label={`Semana de ${label}`} dates={weekOf(date)} items={items} onOpen={openPreview} onOpenDay={openDay} />
+            <TimeGrid label={`Semana de ${label}`} dates={weekOf(date)} items={items} onOpen={openPreview} onOpenDay={openDay} onCreate={createAt} />
           ) : view === 'mes' && isDesktop ? (
-            <MonthGrid month={date.slice(0, 7)} weeks={buildMonthGrid(date.slice(0, 7))} itemsByDate={itemsByDate} onOpen={openPreview} onOpenDay={openDay} />
+            <MonthGrid month={date.slice(0, 7)} weeks={buildMonthGrid(date.slice(0, 7))} itemsByDate={itemsByDate} onOpen={openPreview} onOpenDay={openDay} onCreate={createAt} />
           ) : (
             <AgendaList days={days} onOpen={openPreview} onOpenDay={openDay} />
           )}
@@ -155,6 +168,15 @@ export default function CalendarPage() {
             setEditing(preview.item)
             setPreview(null)
           }}
+        />
+      )}
+      {creating && patients && (
+        <SessionDialog
+          patients={patients}
+          initialDate={creating.date}
+          initialTime={creating.time}
+          onClose={() => setCreating(null)}
+          onSaved={saved}
         />
       )}
       {editing && (

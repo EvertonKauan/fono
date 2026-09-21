@@ -1,3 +1,4 @@
+import type { MouseEvent } from 'react'
 import Box from '@mui/material/Box'
 import ButtonBase from '@mui/material/ButtonBase'
 import Stack from '@mui/material/Stack'
@@ -13,12 +14,14 @@ type Props = {
   itemsByDate: Map<string, CalendarItem[]>
   onOpen: (item: CalendarItem, anchor: HTMLElement) => void
   onOpenDay: (date: string) => void
+  onCreate: (date: string) => void
 }
 
 const border = { border: 1, borderColor: 'divider' } as const
 
 // A partir de md: grade de semanas (domingo a sábado); dias vizinhos ao mês ficam esmaecidos.
-export default function MonthGrid({ month, weeks, itemsByDate, onOpen, onOpenDay }: Props) {
+// Área vazia de um dia sem sessões é alvo de clique/toque para criar (fora da ordem de tabulação; o teclado usa "Nova sessão").
+export default function MonthGrid({ month, weeks, itemsByDate, onOpen, onOpenDay, onCreate }: Props) {
   const today = todayIso()
 
   return (
@@ -43,11 +46,20 @@ export default function MonthGrid({ month, weeks, itemsByDate, onOpen, onOpenDay
               {week.map((date) => {
                 const inMonth = date.startsWith(month)
                 const isToday = date === today
+                const empty = !itemsByDate.get(date)?.length
                 return (
                   <Box
                     component="td"
                     key={date}
-                    sx={{ ...border, verticalAlign: 'top', height: 112, p: 0.5, bgcolor: inMonth ? 'background.paper' : 'background.default' }}
+                    onClick={empty ? (event: MouseEvent<HTMLElement>) => event.target === event.currentTarget && onCreate(date) : undefined}
+                    sx={{
+                      ...border,
+                      verticalAlign: 'top',
+                      height: 112,
+                      p: 0.5,
+                      bgcolor: inMonth ? 'background.paper' : 'background.default',
+                      ...(empty && { cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }),
+                    }}
                   >
                     <ButtonBase
                       onClick={() => onOpenDay(date)}

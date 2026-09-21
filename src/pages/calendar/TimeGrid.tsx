@@ -14,12 +14,13 @@ type Props = {
   items: CalendarItem[]
   onOpen: (item: CalendarItem, anchor: HTMLElement) => void
   onOpenDay?: (date: string) => void
+  onCreate: (date: string, time: string) => void
 }
 
 const visuallyHidden = {
   position: 'absolute',
-  width: 1,
-  height: 1,
+  width: '1px', // no sx do MUI, 1 (sem unidade) vale 100%
+  height: '1px',
   overflow: 'hidden',
   clip: 'rect(0 0 0 0)',
   whiteSpace: 'nowrap',
@@ -33,7 +34,8 @@ const byTimeThenName = (a: CalendarItem, b: CalendarItem) =>
 
 // Semana (a partir de md, 7 dias) e Dia (todas as larguras, 1 dia): linhas de 30 minutos, uma coluna por dia.
 // A sessão não tem duração: ocupa a fatia do seu horário; na mesma fatia ficam empilhadas.
-export default function TimeGrid({ label, dates, items, onOpen, onOpenDay }: Props) {
+// Célula vazia é alvo de clique/toque para criar sessão (fora da ordem de tabulação; o teclado usa "Nova sessão").
+export default function TimeGrid({ label, dates, items, onOpen, onOpenDay, onCreate }: Props) {
   const today = todayIso()
   const untimed = new Map<string, CalendarItem[]>()
   const bySlot = new Map<string, CalendarItem[]>()
@@ -180,10 +182,13 @@ export default function TimeGrid({ label, dates, items, onOpen, onOpenDay }: Pro
                   {slot}
                 </Typography>
               </Box>
-              {dates.map((date) => (
+              {dates.map((date) => {
+                const cellItems = bySlot.get(`${date}|${slot}`)
+                return (
                 <Box
                   component="td"
                   key={date}
+                  onClick={cellItems ? undefined : () => onCreate(date, slot)}
                   sx={{
                     ...cellBorder,
                     borderTop: 1,
@@ -193,11 +198,13 @@ export default function TimeGrid({ label, dates, items, onOpen, onOpenDay }: Pro
                     p: 0.25,
                     verticalAlign: 'top',
                     bgcolor: columnBg(date),
+                    ...(!cellItems && { cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }),
                   }}
                 >
-                  {renderItems(bySlot.get(`${date}|${slot}`))}
+                  {renderItems(cellItems)}
                 </Box>
-              ))}
+                )
+              })}
             </tr>
           )
         })}

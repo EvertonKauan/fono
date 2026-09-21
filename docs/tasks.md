@@ -65,8 +65,8 @@ Revisão do RF-13: substitui a decisão "o calendário só mostra e edita". Agor
 - [x] **T36** `utils/calendar.ts` para as visões (`weekOf`, `viewRange`, `shiftDate`, `rangeLabel`, fatias de 30 minutos e faixa de horas) com testes; `CalendarPage` com seletor Mês/Semana/Dia, `?visao=&data=`, anterior/próximo/"Hoje" por visão; Mês e Semana abaixo de `md` como agenda; número e título do dia levam à visão Dia. *(RF-13; plan §4, §7)*
 - [x] **T37** `TimeGrid`: grade de horários (Semana a partir de `md`, Dia em todas as larguras), linha "Sem horário", sessões empilhadas por fatia, hoje destacado; seed com dois pacientes no mesmo horário. *(RF-13)*
 - [x] **T38** `SessionPreview` (Popover) em todas as visões, com paciente, dia/horário, status, cobrança e "Editar" que abre o `SessionDialog`; Esc ou clicar fora fecha. *(RF-13)*
-- [ ] **T39** `SessionDialog` com escolha de paciente (`Autocomplete`, só ativos do tenant, sem acento, obrigatório) e `initialDate`/`initialTime`; sugestão do horário do paciente; teste da lista de opções. *(RF-13, RF-11, RF-12)*
-- [ ] **T40** Criar no calendário: clique em horário vazio (`TimeGrid`), em dia vazio (Mês) e botão "Nova sessão" no topo; a sessão aparece no calendário e na aba Sessões. *(RF-13)*
+- [x] **T39** `SessionDialog` com escolha de paciente (`Autocomplete`, só ativos do tenant, sem acento, obrigatório) e `initialDate`/`initialTime`; sugestão do horário do paciente; teste da lista de opções. *(RF-13, RF-11, RF-12)*
+- [x] **T40** Criar no calendário: clique em horário vazio (`TimeGrid`), em dia vazio (Mês) e botão "Nova sessão" no topo; a sessão aparece no calendário e na aba Sessões. *(RF-13)*
 - [ ] **T41** Verificação dos critérios de aceite revisados do RF-13, do isolamento (calendário e busca de paciente entre tenants, arquivados fora da busca) e regressão de RF-11, RF-12, RF-14 e RF-15. *(RF-10, RF-13)*
 - [ ] **T42** Verificação responsiva das visões novas (Semana, Dia, prévia, criação e agenda) em 360/390/1280 e nos limites `sm`/`md`; registrar em `docs/known-issues.md` qualquer limitação nova. *(RNF responsivo)*
 
