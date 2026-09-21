@@ -4,6 +4,22 @@ import type { Patient, Payment, PaymentMethod, Session, SessionStatus } from '..
 const CLAU = 'claudionaria'
 const DEMO = 'demo'
 
+// Valor cobrado por sessão de cada paciente fictício (o seed cria as sessões e os lançamentos históricos com ele).
+const FEES: Record<string, number> = {
+  'p-001': 150,
+  'p-002': 150,
+  'p-003': 160,
+  'p-004': 160,
+  'p-005': 180,
+  'p-006': 180,
+  'p-007': 180,
+  'p-008': 150,
+  'p-009': 180,
+  'p-101': 200,
+  'p-102': 200,
+}
+const feeOf = (patient: Patient) => FEES[patient.id] ?? 0
+
 const paid = (
   id: string,
   tenantId: string,
@@ -18,7 +34,7 @@ const paid = (
   patientId: patient.id,
   period,
   sessions,
-  amount: sessions * patient.visit.fee,
+  amount: sessions * feeOf(patient),
   status: 'pago',
   paidAt,
   method,
@@ -36,7 +52,7 @@ const pending = (
   patientId: patient.id,
   period,
   sessions,
-  amount: sessions * patient.visit.fee,
+  amount: sessions * feeOf(patient),
   status: 'pendente',
 })
 
@@ -55,7 +71,7 @@ const session = (
   time,
   status,
   billing: 'particular',
-  value: patient.visit.fee,
+  value: feeOf(patient),
   createdAt: `${date}T12:00:00.000Z`,
   updatedAt: `${date}T12:00:00.000Z`,
   ...extra,
@@ -104,7 +120,6 @@ export function createSeed(): Db {
     guardians: [{ name: 'Renata Andrade Lopes', relationship: 'Mãe', phone: '(19) 9 9999-0101' }],
     cpf: '05792134804',
     financialGuardian: { name: 'Renata Andrade Lopes', cpf: '67925633581' },
-    visit: { fee: 150, weekdays: [2, 4], time: '15:00' },
     createdAt: '2026-01-12T13:00:00.000Z',
   }
   const helena: Patient = {
@@ -121,7 +136,6 @@ export function createSeed(): Db {
     school: 'Creche Pequeno Jardim',
     guardians: [{ name: 'Paulo Souza Barros', relationship: 'Pai', phone: '(19) 9 9999-0102' }],
     financialGuardian: { name: 'Paulo Souza Barros', cpf: '03098394161' },
-    visit: { fee: 150, weekdays: [1], time: '09:00' },
     createdAt: '2026-02-03T12:00:00.000Z',
   }
   const davi: Patient = {
@@ -138,7 +152,6 @@ export function createSeed(): Db {
     school: 'Colégio Novo Horizonte',
     guardians: [{ name: 'Fernanda Ferreira', relationship: 'Mãe', phone: '(19) 9 9999-0103' }],
     financialGuardian: { name: 'Fernanda Ferreira', cpf: '36193179330' },
-    visit: { fee: 160, weekdays: [3], time: '16:30' },
     createdAt: '2026-03-10T14:00:00.000Z',
   }
   const beatriz: Patient = {
@@ -156,7 +169,6 @@ export function createSeed(): Db {
     guardians: [{ name: 'Marta Nogueira', relationship: 'Mãe', phone: '(19) 9 9999-0104' }],
     cpf: '99049334806',
     financialGuardian: { name: 'Marta Nogueira', cpf: '13795343488' },
-    visit: { fee: 160, weekdays: [5], time: '14:00' },
     createdAt: '2026-01-20T15:00:00.000Z',
   }
   const carlos: Patient = {
@@ -175,7 +187,6 @@ export function createSeed(): Db {
     occupation: 'Professor',
     guardians: [],
     cpf: '45334093184',
-    visit: { fee: 180, weekdays: [2], time: '19:00' },
     createdAt: '2026-04-06T22:00:00.000Z',
   }
   const sandra: Patient = {
@@ -192,7 +203,6 @@ export function createSeed(): Db {
     occupation: 'Aposentada',
     guardians: [],
     cpf: '00691218854',
-    visit: { fee: 180, weekdays: [4], time: '10:30' },
     createdAt: '2026-02-17T13:00:00.000Z',
   }
   const rafael: Patient = {
@@ -210,7 +220,6 @@ export function createSeed(): Db {
     occupation: 'Atendente de telemarketing',
     guardians: [],
     cpf: '73772112374',
-    visit: { fee: 180, weekdays: [1, 3], time: '18:00' },
     createdAt: '2026-05-11T21:00:00.000Z',
   }
   const livia: Patient = {
@@ -227,7 +236,6 @@ export function createSeed(): Db {
     school: 'Escola Infantil Arco-Íris',
     guardians: [{ name: 'Juliana Prado', relationship: 'Mãe', phone: '(19) 9 9999-0108' }],
     financialGuardian: { name: 'Juliana Prado', cpf: '01363687271' },
-    visit: { fee: 150, weekdays: [5], time: '08:30' },
     createdAt: '2026-06-02T12:00:00.000Z',
   }
 
@@ -245,7 +253,6 @@ export function createSeed(): Db {
     occupation: 'Motorista',
     guardians: [],
     cpf: '93471632522',
-    visit: { fee: 180, weekdays: [2], time: '20:00' },
     createdAt: '2026-03-01T13:00:00.000Z',
     archivedAt: '2026-08-30T15:00:00.000Z',
   }
@@ -260,7 +267,6 @@ export function createSeed(): Db {
     occupation: 'Advogada',
     guardians: [],
     cpf: '71687264040',
-    visit: { fee: 200, weekdays: [3], time: '11:00' },
     createdAt: '2026-01-05T12:00:00.000Z',
   }
   const pedro: Patient = {
@@ -273,7 +279,6 @@ export function createSeed(): Db {
     schooling: '4º ano do Fundamental',
     guardians: [{ name: 'Lucas Souza', relationship: 'Pai', phone: '(11) 9 0000-0002' }],
     financialGuardian: { name: 'Lucas Souza', cpf: '91450115756' },
-    visit: { fee: 200, weekdays: [2], time: '16:00' },
     createdAt: '2026-01-05T12:00:00.000Z',
   }
 

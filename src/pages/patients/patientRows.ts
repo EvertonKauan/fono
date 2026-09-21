@@ -1,14 +1,12 @@
 import type { Patient, PatientKind } from '../../types/domain.ts'
 import { ageOf } from '../../utils/age.ts'
-import { formatWeekdays, kindLabel, normalizeText } from '../../utils/format.ts'
+import { kindLabel, normalizeText } from '../../utils/format.ts'
 
 export type PatientRow = {
   id: string
   fullName: string
   kind: string
   age: number
-  days: string
-  fee: number
   pending: boolean
   archived: boolean
   phone: string
@@ -44,8 +42,6 @@ export function toRow(patient: Patient, pendingIds: Set<string>): PatientRow {
     fullName: patient.fullName,
     kind: kindLabel[patient.kind],
     age: ageOf(patient.birthDate),
-    days: formatWeekdays(patient.visit.weekdays),
-    fee: patient.visit.fee,
     pending: pendingIds.has(patient.id),
     archived: Boolean(patient.archivedAt),
     phone: patient.phone ?? '',

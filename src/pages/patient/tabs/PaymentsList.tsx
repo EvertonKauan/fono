@@ -19,6 +19,7 @@ import { formatCurrency, formatDate, formatPeriod, methodLabel } from '../../../
 type Props = {
   year: number
   payments: Payment[]
+  onEdit: (payment: Payment) => void
   onMarkPaid: (payment: Payment) => void
   onUndo: (payment: Payment) => void
 }
@@ -26,27 +27,36 @@ type Props = {
 const paidOn = (payment: Payment) => (payment.paidAt ? formatDate(payment.paidAt) : '—')
 const methodOf = (payment: Payment) => (payment.method ? methodLabel[payment.method] : '—')
 
-function Action({ payment, onMarkPaid, onUndo }: { payment: Payment } & Pick<Props, 'onMarkPaid' | 'onUndo'>) {
-  return payment.status === 'pendente' ? (
-    <Button
-      size="small"
-      variant="outlined"
-      onClick={() => onMarkPaid(payment)}
-      aria-label={`Marcar como pago o lançamento de ${formatPeriod(payment.period)}`}
-    >
-      Marcar como pago
-    </Button>
-  ) : (
-    <Button size="small" onClick={() => onUndo(payment)} aria-label={`Desfazer pagamento de ${formatPeriod(payment.period)}`}>
-      Desfazer
-    </Button>
+function Actions({ payment, onEdit, onMarkPaid, onUndo }: { payment: Payment } & Pick<Props, 'onEdit' | 'onMarkPaid' | 'onUndo'>) {
+  const period = formatPeriod(payment.period)
+  return (
+    <Stack direction="row" gap={0.5} flexWrap="wrap">
+      <Button size="small" onClick={() => onEdit(payment)} aria-label={`Editar valor do lançamento de ${period}`}>
+        Editar valor
+      </Button>
+      {payment.status === 'pendente' ? (
+        <Button size="small" variant="outlined" onClick={() => onMarkPaid(payment)} aria-label={`Marcar como pago o lançamento de ${period}`}>
+          Marcar como pago
+        </Button>
+      ) : (
+        <Button size="small" onClick={() => onUndo(payment)} aria-label={`Desfazer pagamento de ${period}`}>
+          Desfazer
+        </Button>
+      )}
+    </Stack>
   )
 }
 
-export default function PaymentsList({ year, payments, onMarkPaid, onUndo }: Props) {
+export default function PaymentsList({ year, payments, onEdit, onMarkPaid, onUndo }: Props) {
   const isDesktop = useMediaQuery(useTheme().breakpoints.up('md'))
 
-  if (payments.length === 0) return <Typography color="text.secondary">Nenhum lançamento em {year}.</Typography>
+  if (payments.length === 0) {
+    return (
+      <Typography color="text.secondary">
+        Nenhum lançamento em {year}. Eles são criados quando uma sessão é marcada como Realizada.
+      </Typography>
+    )
+  }
 
   if (isDesktop) {
     return (
@@ -73,7 +83,7 @@ export default function PaymentsList({ year, payments, onMarkPaid, onUndo }: Pro
                 <TableCell>{paidOn(payment)}</TableCell>
                 <TableCell>{methodOf(payment)}</TableCell>
                 <TableCell>
-                  <Action payment={payment} onMarkPaid={onMarkPaid} onUndo={onUndo} />
+                  <Actions payment={payment} onEdit={onEdit} onMarkPaid={onMarkPaid} onUndo={onUndo} />
                 </TableCell>
               </TableRow>
             ))}
@@ -111,7 +121,7 @@ export default function PaymentsList({ year, payments, onMarkPaid, onUndo }: Pro
                 </Box>
               ))}
             </Box>
-            <Action payment={payment} onMarkPaid={onMarkPaid} onUndo={onUndo} />
+            <Actions payment={payment} onEdit={onEdit} onMarkPaid={onMarkPaid} onUndo={onUndo} />
           </Card>
         </li>
       ))}

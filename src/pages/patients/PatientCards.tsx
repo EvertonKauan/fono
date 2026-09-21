@@ -8,7 +8,7 @@ import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import Unarchive from '@mui/icons-material/Unarchive'
 import PaymentChip from '../../components/PaymentChip.tsx'
-import { formatAge, formatCurrency } from '../../utils/format.ts'
+import { formatAge } from '../../utils/format.ts'
 import type { PatientRow } from './patientRows.ts'
 
 type Props = {
@@ -39,18 +39,6 @@ export default function PatientCards({ rows, onUnarchive }: Props) {
                 component="dl"
                 sx={{ display: 'grid', gridTemplateColumns: 'auto 1fr', columnGap: 1.5, rowGap: 0.25, m: 0, mt: 1 }}
               >
-                <Typography component="dt" variant="body2" color="text.secondary">
-                  Dias de atendimento
-                </Typography>
-                <Typography component="dd" variant="body2" sx={{ m: 0 }}>
-                  {row.days}
-                </Typography>
-                <Typography component="dt" variant="body2" color="text.secondary">
-                  Valor da consulta
-                </Typography>
-                <Typography component="dd" variant="body2" sx={{ m: 0 }}>
-                  {formatCurrency(row.fee)}
-                </Typography>
                 <Typography component="dt" variant="body2" color="text.secondary">
                   Telefone
                 </Typography>

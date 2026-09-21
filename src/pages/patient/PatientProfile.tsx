@@ -126,7 +126,6 @@ export default function PatientProfile() {
           <FinanceiroTab
             patient={patient}
             payments={payments}
-            onPatientSaved={setPatient}
             onPaymentsChange={setPayments}
           />
         )}

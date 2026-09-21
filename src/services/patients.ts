@@ -18,7 +18,6 @@ export async function createPatient(tenantId: string, input: NewPatient): Promis
     id: newId(),
     tenantId,
     guardians: [],
-    visit: { fee: 0, weekdays: [] },
     createdAt: new Date().toISOString(),
   }
   upsertRow('patients', tenantId, patient)

@@ -21,10 +21,6 @@ export const formatAge = (age: number) => (age === 1 ? '1 ano' : `${age} anos`)
 export const weekdayShort = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 export const weekdayLong = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado']
 
-// 0=dom … 6=sáb → "Ter, Qui"
-export const formatWeekdays = (days: number[]) =>
-  days.length ? [...days].sort((a, b) => a - b).map((day) => weekdayShort[day]).join(', ') : '—'
-
 // minúsculas e sem acentos, para busca
 export const normalizeText = (text: string) =>
   text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()

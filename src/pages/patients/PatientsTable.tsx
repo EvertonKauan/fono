@@ -7,7 +7,7 @@ import Stack from '@mui/material/Stack'
 import Unarchive from '@mui/icons-material/Unarchive'
 import { DataGrid, type GridColDef } from '@mui/x-data-grid'
 import PaymentChip from '../../components/PaymentChip.tsx'
-import { formatAge, formatCurrency } from '../../utils/format.ts'
+import { formatAge } from '../../utils/format.ts'
 import type { PatientRow } from './patientRows.ts'
 
 const baseColumns: GridColDef<PatientRow>[] = [
@@ -41,16 +41,6 @@ const baseColumns: GridColDef<PatientRow>[] = [
     align: 'left',
     headerAlign: 'left',
     valueFormatter: (value: number) => formatAge(value),
-  },
-  { field: 'days', headerName: 'Dias de atendimento', width: 155 },
-  {
-    field: 'fee',
-    headerName: 'Valor da consulta',
-    type: 'number',
-    width: 140,
-    align: 'left',
-    headerAlign: 'left',
-    valueFormatter: (value: number) => formatCurrency(value),
   },
   {
     field: 'pending',

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import type { Anamnese, Patient, Payment, Prescription, Tenant } from '../../../types/domain.ts'
-import { formatCurrency, formatDate, formatPeriod, formatWeekdays, methodLabel } from '../../../utils/format.ts'
+import { formatCurrency, formatDate, formatPeriod, methodLabel } from '../../../utils/format.ts'
 import { byPeriodDesc } from './financeiro.ts'
 import { REPORT_SECTIONS, answeredSections, patientFields, type ReportInclude } from './report.ts'
 
@@ -27,7 +27,7 @@ export default function ReportDocument({ patient, tenant, payments, anamnese, pr
     dados: <Fields fields={patientFields(patient)} />,
     anamnese: <AnamneseSection patient={patient} anamnese={anamnese} />,
     prescricoes: <PrescricoesSection prescriptions={prescriptions} />,
-    financeiro: <FinanceiroSection patient={patient} payments={payments} />,
+    financeiro: <FinanceiroSection payments={payments} />,
   }
 
   return (
@@ -130,22 +130,14 @@ function PrescricoesSection({ prescriptions }: { prescriptions: Prescription[] }
   )
 }
 
-function FinanceiroSection({ patient, payments }: { patient: Patient; payments: Payment[] }) {
+function FinanceiroSection({ payments }: { payments: Payment[] }) {
   const sorted = [...payments].sort(byPeriodDesc)
   const total = (status: Payment['status']) =>
     payments.filter((p) => p.status === status).reduce((sum, p) => sum + Math.round(p.amount * 100), 0) / 100
-  const { fee, weekdays, time } = patient.visit
   const cell = { textAlign: 'left', py: 0.5, pr: 1.5, borderBottom: 1, borderColor: 'divider', fontSize: 'inherit', verticalAlign: 'top' } as const
 
   return (
     <>
-      <Fields
-        fields={[
-          { label: 'Valor da consulta', value: formatCurrency(fee) },
-          { label: 'Dias de atendimento', value: formatWeekdays(weekdays) },
-          ...(time ? [{ label: 'Horário', value: time }] : []),
-        ]}
-      />
       <Typography variant="h3" sx={subtitle}>
         Lançamentos
       </Typography>

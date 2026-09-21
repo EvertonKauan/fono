@@ -37,7 +37,7 @@ describe('migrateDb', () => {
     const full = createSeed()
     const old = {
       ...full,
-      patients: full.patients.map((p) => (p.id === 'p-001' ? { ...p, visit: { ...p.visit, fee: 175 } } : p)),
+      patients: full.patients.map((p) => ({ ...p, visit: { fee: p.id === 'p-001' ? 175 : 100, weekdays: [2, 4] } })),
       sessions: full.sessions.map((s) => {
         const legacySession: Partial<typeof s> = { ...s }
         delete legacySession.value
@@ -50,6 +50,17 @@ describe('migrateDb', () => {
     expect(mine.length).toBeGreaterThan(0)
     expect(mine.every((s) => s.value === 175)).toBe(true)
     expect(result.db.sessions.every((s) => typeof s.value === 'number')).toBe(true)
+    expect(result.db.payments).toBe(old.payments)
+    expect(migrateDb(result.db)).toEqual({ db: result.db, changed: false })
+  })
+
+  it('remove o campo visit dos pacientes já salvos, uma vez só, sem tocar no resto', () => {
+    const full = createSeed()
+    const old = { ...full, patients: full.patients.map((p) => ({ ...p, visit: { fee: 150, weekdays: [1], time: '09:00' } })) }
+    const result = migrateDb(old)!
+    expect(result.changed).toBe(true)
+    expect(result.db.patients.every((p) => !('visit' in p))).toBe(true)
+    expect(result.db.patients.map((p) => p.fullName)).toEqual(full.patients.map((p) => p.fullName))
     expect(result.db.payments).toBe(old.payments)
     expect(migrateDb(result.db)).toEqual({ db: result.db, changed: false })
   })

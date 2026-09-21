@@ -9,7 +9,6 @@ const make = (id: string, fullName: string, kind: Patient['kind'], archivedAt?: 
   fullName,
   birthDate: '2000-01-01',
   guardians: [],
-  visit: { fee: 100, weekdays: [] },
   createdAt: '2026-01-01T00:00:00.000Z',
   archivedAt,
 })

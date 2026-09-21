@@ -12,7 +12,7 @@ import PaymentChip from '../../components/PaymentChip.tsx'
 import type { Patient } from '../../types/domain.ts'
 import { ageOf } from '../../utils/age.ts'
 import { maskCpf } from '../../utils/cpf.ts'
-import { formatAge, formatCurrency, formatWeekdays, kindLabel } from '../../utils/format.ts'
+import { formatAge, kindLabel } from '../../utils/format.ts'
 
 type Props = { patient: Patient; pending: boolean; onToggleArchive: () => void }
 
@@ -21,8 +21,6 @@ export default function PatientHeader({ patient, pending, onToggleArchive }: Pro
   const archiveLabel = archived ? 'Desarquivar paciente' : 'Arquivar paciente'
   const details = [
     `${kindLabel[patient.kind]} · ${formatAge(ageOf(patient.birthDate))}`,
-    `Consulta ${formatCurrency(patient.visit.fee)}`,
-    `Dias: ${formatWeekdays(patient.visit.weekdays)}`,
     patient.cpf && maskCpf(patient.cpf) ? `CPF ${maskCpf(patient.cpf)}` : null,
   ].filter((item) => item !== null)
 

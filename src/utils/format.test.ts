@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatAge, formatCurrency, formatDate, formatPeriod, billingLabel, formatWeekdays, normalizeText, parseMoney, sessionStatusLabel } from './format.ts'
+import { formatAge, formatCurrency, formatDate, formatPeriod, billingLabel, normalizeText, parseMoney, sessionStatusLabel } from './format.ts'
 
 describe('format', () => {
   it('formata data como dd/mm/aaaa', () => {
@@ -15,11 +15,9 @@ describe('format', () => {
     expect(formatCurrency(1234.5).replace(/\s/g, ' ')).toBe('R$ 1.234,50')
   })
 
-  it('formata idade e dias da semana', () => {
+  it('formata idade', () => {
     expect(formatAge(1)).toBe('1 ano')
     expect(formatAge(8)).toBe('8 anos')
-    expect(formatWeekdays([4, 2])).toBe('Ter, Qui')
-    expect(formatWeekdays([])).toBe('—')
   })
 
   it('normaliza texto sem acentos e maiúsculas', () => {

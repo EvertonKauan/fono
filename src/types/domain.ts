@@ -29,7 +29,6 @@ export type Patient = {
   guardians: { name: string; relationship: string; phone?: string }[]
   cpf?: string
   financialGuardian?: { name: string; cpf: string } // obrigatório se menor
-  visit: { fee: number; weekdays: number[]; time?: string } // 0=dom … 6=sáb
   createdAt: string
   archivedAt?: string // instante ISO; ausente = ativo
 }
