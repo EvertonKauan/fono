@@ -1,12 +1,12 @@
 # Spec — Sistema da Clínica de Fonoaudiologia (Fase 1: front com mocks)
 
 ## 1. Visão
-Sistema web para a fonoaudióloga cadastrar pacientes, registrar anamnese e prescrições, acompanhar sessões e sua evolução, controlar pagamentos e imprimir relatórios. Multi-tenant (cada clínica/profissional é um tenant). Fase 1 usa dados mockados; o back-end vem depois.
+Sistema web para a fonoaudióloga cadastrar pacientes, registrar anamnese e prescrições, acompanhar sessões e sua evolução, controlar pagamentos (lançamentos gerados a partir das sessões realizadas) e imprimir relatórios. Multi-tenant (cada clínica/profissional é um tenant). Fase 1 usa dados mockados; o back-end vem depois.
 
 **Usuário da Fase 1:** Claudionaria Torres, fonoaudióloga, CRFa 4-12096 (tenant `claudionaria`).
 
 ## 2. Escopo
-**Dentro (Fase 1):** login mockado, lista e cadastro de pacientes, perfil com abas, anamnese (criança/adulto), prescrições, financeiro, relatório imprimível, dados fiscais para recibos anuais, arquivamento de pacientes, sessões com evolução e tipo de cobrança, calendário de sessões (visões mês, semana e dia, com criação e edição de sessões), anexos (docx/pdf) na anamnese e na evolução de sessão.
+**Dentro (Fase 1):** login mockado, lista e cadastro de pacientes, perfil com abas, anamnese (criança/adulto), prescrições, financeiro, relatório imprimível, dados fiscais para recibos anuais, arquivamento de pacientes, sessões com valor, evolução e tipo de cobrança, lançamentos financeiros automáticos a partir das sessões realizadas, calendário de sessões (visões mês, semana e dia, com criação e edição de sessões), anexos (docx/pdf) na anamnese e na evolução de sessão.
 
 **Fora (por enquanto):** back-end, autenticação real, agenda avançada (recorrência, conflito de horários, arrastar para reagendar, duração da sessão), emissão do recibo em PDF (só guardamos os dados), múltiplos usuários por tenant, anexos em outras telas ou em outros formatos, excluir paciente ou sessão (existem arquivar e cancelar).
 
@@ -23,7 +23,7 @@ Sistema web para a fonoaudióloga cadastrar pacientes, registrar anamnese e pres
 - [ ] Acessar `/pacientes` sem sessão redireciona para `/login`.
 
 ### RF-02 Lista de pacientes
-- Tabela (DataGrid) com: Nome, Tipo (Criança/Adulto), Idade, Dias de atendimento, Valor da consulta, Pagamento (chip: Em dia / Pendente), Telefone.
+- Tabela (DataGrid) com: Nome, Tipo (Criança/Adulto), Idade, Pagamento (chip: Em dia / Pendente), Telefone.
 - Busca por nome, filtro por tipo e por pagamento pendente. Ordenação por coluna.
 - Filtro "Situação" (Ativos · Arquivados · Todos), com **Ativos** como padrão: pacientes arquivados (RF-11) ficam escondidos e ganham o chip "Arquivado" quando exibidos.
 - Clique na linha abre o perfil. Botão "Novo paciente".
@@ -44,7 +44,7 @@ Sistema web para a fonoaudióloga cadastrar pacientes, registrar anamnese e pres
 - [ ] Após salvar, o paciente aparece na lista e o perfil abre.
 
 ### RF-04 Perfil do paciente
-- Cabeçalho fixo: nome, tipo, idade, valor da consulta, dias de atendimento, chip de pagamento.
+- Cabeçalho fixo: nome, tipo, idade, chip de pagamento.
 - Abas: **Dados · Anamnese · Sessões · Prescrições · Financeiro · Relatório**.
 - Paciente arquivado mostra o chip "Arquivado" no cabeçalho e o botão "Desarquivar" (RF-11).
 
@@ -101,16 +101,28 @@ Fonoaudióloga | CRFa <registro>
 - [ ] Exercícios saem numerados na ordem definida.
 
 ### RF-08 Aba Financeiro
-- Bloco "Atendimento": valor da consulta, dias da semana em que vem (seleção múltipla), horário (opcional).
-- Tabela de lançamentos: competência (mês/ano), nº de sessões, valor, status (Pago/Pendente), data do pagamento, forma (Pix, Dinheiro, Cartão, Outro).
-- "Novo lançamento": valor sugerido = sessões × valor da consulta (editável).
-- Marcar como pago (pede data e forma) e desfazer.
+Os lançamentos são **automáticos**, gerados pelas sessões (RF-12). Não há bloco "Atendimento" nem botão "Novo lançamento": valor, data e horário de cada atendimento pertencem à sessão.
+- Tabela de lançamentos: competência (mês/ano), nº de sessões (calculado, não editável), valor, status (Pago/Pendente), data do pagamento, forma (Pix, Dinheiro, Cartão, Outro).
+- **Criação e soma:** quando uma sessão passa para **Realizada** (ou é criada já Realizada), o valor dela entra na competência do paciente, que é o mês/ano da data da sessão:
+  - se existe um lançamento **Pendente** daquela competência, soma 1 sessão e o valor da sessão nele;
+  - se não existe (nenhum lançamento, ou o único da competência já está **Pago**), cria um novo lançamento **Pendente**, com 1 sessão e o valor da sessão. O lançamento Pago não é tocado.
+- **Ajuste automático, só enquanto Pendente:** se uma sessão Realizada que já entrou num lançamento for cancelada, voltar para Agendada ou tiver o valor editado, o lançamento é ajustado (menos 1 sessão e o valor dela, ou a diferença do valor). O lançamento que ficar com 0 sessões é removido. Se o lançamento já estiver **Pago**, nada é alterado (limitação conhecida).
+- **Continua possível:** editar o valor de um lançamento na mão (ação "Editar valor"; não muda o nº de sessões), marcar como pago (pede data e forma) e desfazer.
 - Resumo: total pendente e total pago no ano selecionado.
+- Não é possível criar lançamento na mão. Sem lançamentos no ano, a tela explica que eles surgem quando uma sessão é marcada como Realizada.
 
 **Aceite**
 - [ ] Pendente aparece com a cor de alerta.
 - [ ] O chip do cabeçalho e da lista fica "Pendente" se existir ao menos um lançamento pendente.
 - [ ] O total pago do ano bate com a soma dos lançamentos pagos.
+- [ ] Não existem o bloco "Atendimento" nem o botão "Novo lançamento".
+- [ ] Sessão que vira Realizada, sem lançamento Pendente na competência, cria um lançamento Pendente com 1 sessão e o valor da sessão; a competência é o mês da data da sessão.
+- [ ] Uma segunda sessão Realizada na mesma competência soma sessões e valor no Pendente existente, sem criar outro.
+- [ ] Se o único lançamento da competência está Pago, uma nova sessão Realizada cria um lançamento Pendente separado e o Pago continua igual (valor, sessões, data e forma).
+- [ ] Cancelar uma sessão Realizada contada, voltá-la para Agendada ou editar o valor dela ajusta o lançamento Pendente (e o remove se ficar sem sessões); se ele estiver Pago, nada muda.
+- [ ] Criar, editar, cancelar ou reagendar sessão que não é (nem foi) Realizada não cria nem altera lançamento.
+- [ ] Editar o valor de um lançamento na mão persiste e não muda o nº de sessões; marcar como pago e desfazer continuam funcionando.
+- [ ] Lançamentos automáticos gravam o `tenantId` do paciente e não aparecem para outro tenant (RF-10).
 
 ### RF-09 Aba Relatório
 - Escolha do que incluir: Dados, Anamnese, Prescrições, Financeiro (checkboxes).
@@ -147,17 +159,20 @@ Fonoaudióloga | CRFa <registro>
 - [ ] Com o filtro "Arquivados", o botão "Desarquivar" da linha ou do cartão tira o paciente da lista de arquivados sem abrir o perfil.
 
 ### RF-12 Aba Sessões (evolução)
-- Aba "Sessões" no perfil, entre Anamnese e Prescrições: histórico das sessões do paciente, da mais recente para a mais antiga (data, horário, status, cobrança e resumo da evolução), com "Nova sessão" e "Editar".
-- Sessão: data (obrigatória), horário (opcional; sugere o horário de atendimento do paciente), status (**Agendada** padrão · Realizada · Cancelada), cobrança (RF-14), **evolução** (texto livre com o que aconteceu na sessão, opcional) e anexos (RF-15).
+- Aba "Sessões" no perfil, entre Anamnese e Prescrições: histórico das sessões do paciente, da mais recente para a mais antiga (data, horário, status, cobrança, valor e resumo da evolução), com "Nova sessão" e "Editar".
+- Sessão: data (obrigatória), horário (opcional), **valor** (obrigatório, maior que zero), status (**Agendada** padrão · Realizada · Cancelada), cobrança (RF-14), **evolução** (texto livre com o que aconteceu na sessão, opcional) e anexos (RF-15).
+- **Valor sugerido:** ao criar uma sessão, o campo vem preenchido com o valor da sessão mais recente do paciente (qualquer status; a primeira da lista, por data e horário). Sem histórico, começa vazio. É sempre editável. No calendário, a sugestão aparece ao escolher o paciente e só enquanto o valor não foi digitado.
 - Sessões não são excluídas; a que não acontece fica "Cancelada".
-- Sessões são independentes dos lançamentos financeiros mensais (RF-08): criar ou editar sessão não cria nem altera lançamento, e o nº de sessões do lançamento continua digitado.
+- Sessões alimentam os lançamentos financeiros (RF-08): só o status **Realizada** gera ou ajusta lançamento; criar ou editar sessão Agendada ou Cancelada não mexe no financeiro.
 - O formulário (Dialog) de criação e edição é o mesmo usado no calendário (RF-13); no calendário ele ganha, no topo, o campo de escolha do paciente.
 
 **Aceite**
 - [ ] A lista mostra as sessões da mais recente para a mais antiga.
 - [ ] Não salva sem data.
 - [ ] A evolução salva persiste ao recarregar e aparece resumida na lista.
-- [ ] Criar ou editar sessão não muda nenhum lançamento nem o chip de pagamento.
+- [ ] Não salva sem valor (vazio ou zero).
+- [ ] Nova sessão sugere o valor da sessão mais recente do paciente; sem histórico, o campo começa vazio; o valor sugerido pode ser trocado.
+- [ ] Criar ou editar sessão Agendada ou Cancelada não muda nenhum lançamento nem o chip de pagamento; a Realizada segue o RF-08.
 
 ### RF-13 Calendário
 Comportamento inspirado no Google Calendar (visões, prévia e criar no horário); a aparência segue o tema do projeto (constitution).
@@ -189,7 +204,7 @@ Comportamento inspirado no Google Calendar (visões, prévia e criar no horário
 - Cada sessão tem "Cobrança": **Particular** (padrão) ou **Convênio**.
 - Convênio mostra o campo de texto "Nome do convênio", obrigatório. Particular não guarda nome de convênio.
 - A cobrança aparece na lista de sessões ("Particular" ou "Convênio: <nome>") e no Dialog.
-- É só um registro da sessão: não gera nem altera lançamentos financeiros.
+- O tipo de cobrança não muda o financeiro: a sessão de convênio Realizada soma o valor dela no lançamento como a particular (RF-08).
 
 **Aceite**
 - [ ] O padrão é Particular e o campo do convênio só aparece quando Convênio está selecionado.
@@ -219,17 +234,23 @@ Comportamento inspirado no Google Calendar (visões, prévia e criar no horário
 - **Impressão:** estilos `@media print` dedicados (independem do layout responsivo, seguem o formato A4 fixo).
 
 ## 5. Suposições a confirmar
-1. Cobrança é por lançamento mensal (competência), não por sessão avulsa.
+1. Cobrança é por lançamento mensal (competência), gerado a partir das sessões Realizadas, e não por sessão avulsa.
 2. O relatório do paciente reúne Dados, Anamnese, Prescrições e Financeiro à escolha.
 3. "Criança" é o paciente menor de 18 anos (adolescentes incluídos), editável manualmente.
 4. Prescrições ganham aba própria (além das quatro citadas), pois têm histórico e impressão próprios.
 5. Sessão tem três status (Agendada, Realizada, Cancelada) e não é excluída, só cancelada.
 6. Arquivar esconde o paciente da lista padrão e do calendário; nada é apagado e o perfil segue editável.
 7. Anexos aceitam só `.pdf` e `.docx` (não o `.doc` antigo), até 10 MB cada.
-8. Sessões e lançamentos são independentes: o nº de sessões do lançamento (RF-08) continua digitado, sem ser calculado a partir das sessões registradas.
+8. O nº de sessões do lançamento (RF-08) é calculado a partir das sessões Realizadas que entraram nele; o valor do lançamento pode ser editado na mão, sem mudar esse número.
 9. Sessão não tem duração: nas grades de horário ocupa uma linha de 30 minutos, e duas sessões no mesmo horário são permitidas (sem alerta de conflito).
 10. No calendário a semana vai de domingo a sábado e a visão padrão é Mês.
 11. Reagendar é editar a sessão (data e horário no Dialog); arrastar e soltar fica para depois.
+12. O valor da sessão é obrigatório e maior que zero (sessão gratuita não é prevista). Sessão de convênio soma no lançamento como a particular.
+13. "Sessão mais recente", para sugerir o valor, é a primeira da lista da aba Sessões (maior data; empate por horário e depois por criação), mesmo que seja uma sessão futura.
+14. Só conta a mudança para Realizada (ou criar já Realizada) feita depois desta revisão: sessões que já estavam Realizadas antes não geram lançamento retroativo. Na migração, cada sessão antiga recebe como valor o antigo "valor da consulta" do paciente (0 se não havia) e o cadastro perde os campos de atendimento.
+15. Lançamento Pago nunca é alterado automaticamente. Trocar a data de uma sessão já contada para outro mês também não a move de lançamento (limitações conhecidas).
+16. "Editar valor" existe em qualquer lançamento (Pendente ou Pago). Se um "Desfazer" deixar dois lançamentos Pendentes na mesma competência, a soma automática vai para o último da lista.
+17. Sem horário de atendimento no paciente, o Dialog de sessão não sugere mais horário: ele vem só do clique no calendário ou fica vazio.
 
 ---
 

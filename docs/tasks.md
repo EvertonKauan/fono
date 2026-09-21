@@ -37,7 +37,7 @@ Ordem de execução. Cada tarefa entrega o menor incremento utilizável e cita a
 - [x] **T22** Verificação responsiva: lista (cartões em `xs/sm`, tabela a partir de `md`), abas roláveis, Dialog em tela cheia no celular, formulários sem overflow horizontal. *(RNF responsivo)*
 
 ## Expansão da Fase 1 (RF-11 a RF-15)
-Arquivar paciente, sessões com evolução e cobrança, calendário e anexos. Tudo continua front com mocks. Decisões já tomadas: sessões separadas dos lançamentos mensais (T12/T13 não mudam) e calendário como tela própria, não aba do paciente. Os ids novos usam `newId` (`plan.md` §13).
+Arquivar paciente, sessões com evolução e cobrança, calendário e anexos. Tudo continua front com mocks. Decisões já tomadas: sessões separadas dos lançamentos mensais (T12/T13 não mudam; revista no M11) e calendário como tela própria, não aba do paciente. Os ids novos usam `newId` (`plan.md` §13).
 
 ## M6 — Arquivar e sessões
 - [x] **T23** Modelo e dados: `Session` e `Patient.archivedAt` em `types/domain.ts`; tabela `sessions` em `db.ts` com a migração (tabelas ausentes preenchidas pelo seed, sem tocar nas existentes) e teste dela; `services/sessions.ts`; sessões e 1 paciente arquivado no `seed.ts`. *(RF-10, RF-11, RF-12; plan §5, §6, §9)*
@@ -70,6 +70,16 @@ Revisão do RF-13: substitui a decisão "o calendário só mostra e edita". Agor
 - [x] **T41** Verificação dos critérios de aceite revisados do RF-13, do isolamento (calendário e busca de paciente entre tenants, arquivados fora da busca) e regressão de RF-11, RF-12, RF-14 e RF-15. *(RF-10, RF-13)*
 - [x] **T42** Verificação responsiva das visões novas (Semana, Dia, prévia, criação e agenda) em 360/390/1280 e nos limites `sm`/`md`; registrar em `docs/known-issues.md` qualquer limitação nova. *(RNF responsivo)*
 
+## M11 — Sessões alimentam o Financeiro
+Revisão do RF-08 e do RF-12: substitui a decisão "sessões separadas dos lançamentos mensais". A sessão ganha valor; os lançamentos passam a ser automáticos (sessão Realizada soma na competência), sem "Novo lançamento" e sem o bloco "Atendimento", e `Patient.visit` deixa de existir. T12 e T13 ficam superadas nesses pontos (o que sobrevive delas: marcar como pago, desfazer e resumo do ano).
+- [ ] **T43** Modelo e dados: `Session.value` e `Session.counted` em `types/domain.ts`; migração em `db.ts` (a `value` das sessões antigas vem do `visit.fee` do paciente, idempotente, sem tocar em lançamentos) com teste; `seed.ts` com `value` nas sessões e lançamentos de setembro/2026 derivados das sessões Realizadas. O `Patient.visit` ainda existe até o T47, para o projeto continuar compilando. *(RF-08, RF-12, RF-10; plan §5, §6, §9)*
+- [ ] **T44** `services/billing.ts` (`applySessionBilling`, `suggestedValue`) com testes de todos os casos do plan §6, integrado a `createSession`/`saveSession` com gravação única de sessão e lançamentos. *(RF-08; plan §6, §10)*
+- [ ] **T45** `SessionDialog`: campo Valor (`MoneyField`, obrigatório e maior que zero) com a sugestão da sessão mais recente do paciente (também ao escolher o paciente no calendário); sem sugestão de horário; valor na lista da aba Sessões e na prévia do calendário; a aba Sessões recarrega os lançamentos do perfil para o chip de pagamento. *(RF-12, RF-13; plan §7)*
+- [ ] **T46** `FinanceiroTab`: remover o bloco Atendimento, o "Novo lançamento" e o `NewPaymentDialog`; nº de sessões só leitura; ação "Editar valor" (`EditPaymentDialog`); marcar como pago, desfazer e resumo do ano continuam; estado vazio explicando os lançamentos automáticos. *(RF-08; plan §7)*
+- [ ] **T47** Retirar `Patient.visit` por completo: tipo, `createPatient`, `seed.ts` e a migração (que passa a remover o campo dos dados já salvos, com teste); colunas "Dias de atendimento" e "Valor da consulta" da lista (tabela e cartões), `PatientRow`, cabeçalho do perfil, linhas de atendimento do `ReportDocument`, `formatWeekdays` e testes afetados. *(RF-02, RF-04, RF-09; plan §5, §6, §7)*
+- [ ] **T48** Verificação dos critérios de aceite revisados de RF-08 e RF-12 (e o ajuste de RF-14), isolamento entre tenants dos lançamentos automáticos (RF-10) e regressão de RF-01 a RF-15, atualizando os scripts que usavam "Atendimento" e "Novo lançamento"; registrar em `docs/known-issues.md` as limitações do Pago, da troca de mês e das sessões migradas. *(RF-08, RF-10, RF-12)*
+- [ ] **T49** Verificação responsiva das telas alteradas (Financeiro sem o bloco e com "Editar valor", Dialog da sessão com Valor, lista e cabeçalho sem as colunas de atendimento) em 360/390/1280 e nos limites `sm`/`md`. *(RNF responsivo)*
+
 ## Fase 2 (fora deste documento)
 Back-end e banco de dados; troca do miolo de `services/` por HTTP (inclui anexos em armazenamento de objetos); autenticação real; emissão do recibo anual em PDF; agenda avançada (recorrência, conflito de horários, arrastar para reagendar, duração da sessão).
 
@@ -77,18 +87,18 @@ Back-end e banco de dados; troca do miolo de `services/` por HTTP (inclui anexos
 | RF | Tarefas |
 |---|---|
 | RF-01 | T05, T06 |
-| RF-02 | T08, T24 |
+| RF-02 | T08, T24, T47 |
 | RF-03 | T09 |
-| RF-04 | T10, T24, T26 |
+| RF-04 | T10, T24, T26, T47 |
 | RF-05 | T11 |
 | RF-06 | T14, T15, T31 |
 | RF-07 | T16, T17, T18 |
-| RF-08 | T12, T13 |
-| RF-09 | T16, T19 |
-| RF-10 | T04, T07, T21, T23, T30, T34, T41 |
+| RF-08 | T12, T13, T43, T44, T46, T48 |
+| RF-09 | T16, T19, T47 |
+| RF-10 | T04, T07, T21, T23, T30, T34, T41, T43, T48 |
 | RF-11 | T23, T24, T39 |
-| RF-12 | T23, T25, T26, T32, T39 |
-| RF-13 | T27, T28, T29, T36, T37, T38, T39, T40, T41 |
+| RF-12 | T23, T25, T26, T32, T39, T43, T45, T48 |
+| RF-13 | T27, T28, T29, T36, T37, T38, T39, T40, T41, T45 |
 | RF-14 | T25, T26 |
 | RF-15 | T30, T31, T32 |
-| Responsivo (RNF) | T22 (aplicado ao longo de M1–M4), T35 (telas novas), T42 (visões novas do calendário) |
+| Responsivo (RNF) | T22 (aplicado ao longo de M1–M4), T35 (telas novas), T42 (visões novas do calendário), T49 (telas alteradas pelo M11) |
