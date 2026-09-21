@@ -1,14 +1,14 @@
 # Spec — Sistema da Clínica de Fonoaudiologia (Fase 1: front com mocks)
 
 ## 1. Visão
-Sistema web para a fonoaudióloga cadastrar pacientes, registrar anamnese e prescrições, controlar pagamentos e imprimir relatórios. Multi-tenant (cada clínica/profissional é um tenant). Fase 1 usa dados mockados; o back-end vem depois.
+Sistema web para a fonoaudióloga cadastrar pacientes, registrar anamnese e prescrições, acompanhar sessões e sua evolução, controlar pagamentos e imprimir relatórios. Multi-tenant (cada clínica/profissional é um tenant). Fase 1 usa dados mockados; o back-end vem depois.
 
 **Usuário da Fase 1:** Claudionaria Torres, fonoaudióloga, CRFa 4-12096 (tenant `claudionaria`).
 
 ## 2. Escopo
-**Dentro (Fase 1):** login mockado, lista e cadastro de pacientes, perfil com abas, anamnese (criança/adulto), prescrições, financeiro, relatório imprimível, dados fiscais para recibos anuais.
+**Dentro (Fase 1):** login mockado, lista e cadastro de pacientes, perfil com abas, anamnese (criança/adulto), prescrições, financeiro, relatório imprimível, dados fiscais para recibos anuais, arquivamento de pacientes, sessões com evolução e tipo de cobrança, calendário de sessões, anexos (docx/pdf) na anamnese e na evolução de sessão.
 
-**Fora (por enquanto):** back-end, autenticação real, agenda/calendário, emissão do recibo em PDF (só guardamos os dados), múltiplos usuários por tenant, anexos de exames.
+**Fora (por enquanto):** back-end, autenticação real, agenda avançada (recorrência, conflito de horários, criar sessão pelo calendário), emissão do recibo em PDF (só guardamos os dados), múltiplos usuários por tenant, anexos em outras telas ou em outros formatos, excluir paciente ou sessão (existem arquivar e cancelar).
 
 ## 3. Requisitos funcionais
 
@@ -25,12 +25,14 @@ Sistema web para a fonoaudióloga cadastrar pacientes, registrar anamnese e pres
 ### RF-02 Lista de pacientes
 - Tabela (DataGrid) com: Nome, Tipo (Criança/Adulto), Idade, Dias de atendimento, Valor da consulta, Pagamento (chip: Em dia / Pendente), Telefone.
 - Busca por nome, filtro por tipo e por pagamento pendente. Ordenação por coluna.
+- Filtro "Situação" (Ativos · Arquivados · Todos), com **Ativos** como padrão: pacientes arquivados (RF-11) ficam escondidos e ganham o chip "Arquivado" quando exibidos.
 - Clique na linha abre o perfil. Botão "Novo paciente".
 - Pagamento "Pendente" usa a cor de alerta.
 
 **Aceite**
 - [ ] Filtrar "pendentes" mostra só pacientes com algum lançamento pendente.
 - [ ] Busca por nome funciona sem diferenciar maiúsculas/acentos.
+- [ ] Por padrão a lista não mostra pacientes arquivados.
 
 ### RF-03 Cadastro de paciente
 - "Novo paciente" abre um Dialog com o mínimo: nome completo, data de nascimento, tipo, telefone.
@@ -43,7 +45,8 @@ Sistema web para a fonoaudióloga cadastrar pacientes, registrar anamnese e pres
 
 ### RF-04 Perfil do paciente
 - Cabeçalho fixo: nome, tipo, idade, valor da consulta, dias de atendimento, chip de pagamento.
-- Abas: **Dados · Anamnese · Prescrições · Financeiro · Relatório**.
+- Abas: **Dados · Anamnese · Sessões · Prescrições · Financeiro · Relatório**.
+- Paciente arquivado mostra o chip "Arquivado" no cabeçalho e o botão "Desarquivar" (RF-11).
 
 ### RF-05 Aba Dados
 Campos (a identificação da anamnese vive aqui, sem duplicar):
@@ -65,6 +68,7 @@ Campos (a identificação da anamnese vive aqui, sem duplicar):
 - A seção "Voz" é opcional (interruptor "Aplicável"); vem ligada para Adulto e desligada para Criança.
 - Um botão Salvar grava tudo; mostra "última atualização".
 - Perguntas são definidas por um schema (dados, não JSX), para permitir customização por tenant no futuro.
+- A aba também tem a área "Anexos da anamnese" (docx/pdf), descrita no RF-15.
 
 **Aceite**
 - [ ] Trocar o tipo do paciente muda as perguntas exibidas sem perder respostas já salvas.
@@ -113,23 +117,93 @@ Fonoaudióloga | CRFa <registro>
 - Pré-visualização em página e botão "Imprimir".
 - Cabeçalho do relatório: nome da clínica/profissional, registro, data de emissão.
 - Impressão sem elementos de navegação; quebra de página entre seções.
+- Sessões, evoluções e anexos não entram no relatório nesta fase.
 
 **Aceite**
 - [ ] Só as seções marcadas saem no relatório.
 - [ ] Layout de impressão legível em A4.
 
 ### RF-10 Multi-tenant
-- Todo registro tem `tenantId`. O serviço de dados filtra sempre pelo tenant da sessão.
+- Todo registro tem `tenantId` (inclusive sessões e anexos). O serviço de dados filtra sempre pelo tenant da sessão.
 - Nome da clínica, profissional e registro profissional vêm de `Tenant` (não fixos em telas).
 
 **Aceite**
 - [ ] Com dois tenants no mock, cada login vê apenas os próprios pacientes.
+- [ ] Sessões e anexos do tenant `claudionaria` não aparecem para o `demo` (calendário, aba Sessões e download), e vice-versa.
+
+### RF-11 Arquivar paciente
+- Arquivar **não exclui**: o paciente fica marcado como arquivado e nenhum dado (dados, anamnese, sessões, prescrições, financeiro, anexos) é apagado.
+- No perfil, botão "Arquivar paciente" (pede confirmação). Paciente arquivado mostra o chip "Arquivado" e, no lugar do botão, "Desarquivar paciente" (sem confirmação).
+- A lista de pacientes esconde arquivados por padrão; o filtro "Situação" (RF-02) mostra só arquivados ou todos.
+- Com o filtro "Arquivados" ativo, cada linha da tabela e cada cartão da lista tem o botão "Desarquivar" (sem confirmação), sem precisar abrir o perfil.
+- O perfil de um arquivado continua acessível e editável.
+- Sessões de pacientes arquivados não aparecem no calendário (RF-13); continuam na aba Sessões do paciente.
+
+**Aceite**
+- [ ] Arquivar tira o paciente da lista padrão sem apagar nada (dados, sessões, financeiro e anexos seguem no perfil).
+- [ ] Cancelar a confirmação não altera o paciente.
+- [ ] Filtro "Arquivados" lista só arquivados; "Todos" lista ativos e arquivados, com o chip "Arquivado".
+- [ ] Desarquivar devolve o paciente à lista padrão e ao calendário.
+- [ ] Com o filtro "Arquivados", o botão "Desarquivar" da linha ou do cartão tira o paciente da lista de arquivados sem abrir o perfil.
+
+### RF-12 Aba Sessões (evolução)
+- Aba "Sessões" no perfil, entre Anamnese e Prescrições: histórico das sessões do paciente, da mais recente para a mais antiga (data, horário, status, cobrança e resumo da evolução), com "Nova sessão" e "Editar".
+- Sessão: data (obrigatória), horário (opcional; sugere o horário de atendimento do paciente), status (**Agendada** padrão · Realizada · Cancelada), cobrança (RF-14), **evolução** (texto livre com o que aconteceu na sessão, opcional) e anexos (RF-15).
+- Sessões não são excluídas; a que não acontece fica "Cancelada".
+- Sessões são independentes dos lançamentos financeiros mensais (RF-08): criar ou editar sessão não cria nem altera lançamento, e o nº de sessões do lançamento continua digitado.
+- O formulário de edição (Dialog) é o mesmo usado no calendário (RF-13).
+
+**Aceite**
+- [ ] A lista mostra as sessões da mais recente para a mais antiga.
+- [ ] Não salva sem data.
+- [ ] A evolução salva persiste ao recarregar e aparece resumida na lista.
+- [ ] Criar ou editar sessão não muda nenhum lançamento nem o chip de pagamento.
+
+### RF-13 Calendário
+- Tela própria em `/calendario` (rota protegida), com link "Calendário" ao lado de "Pacientes" no topo. Não é aba de paciente.
+- Mostra as sessões de todos os pacientes ativos do tenant, por mês, com navegação mês anterior / próximo / "Hoje".
+- A partir de `md`: grade mensal (semana de domingo a sábado), com hora e nome do paciente dentro de cada dia. Abaixo de `md`: agenda, lista agrupada por dia (só dias com sessão).
+- Realizada aparece com ícone de check; Cancelada, riscada. Mês sem sessões mostra mensagem.
+- Clicar numa sessão abre o mesmo Dialog de edição da aba Sessões (RF-12); ao salvar, o calendário atualiza.
+- Sessões são criadas na aba Sessões do paciente, não no calendário.
+
+**Aceite**
+- [ ] Mostra só sessões do tenant logado e só de pacientes ativos.
+- [ ] Trocar de mês troca as sessões exibidas; "Hoje" volta ao mês atual.
+- [ ] Clicar numa sessão abre o mesmo formulário da aba Sessões; mudar a data move a sessão para o novo dia, e mudar o status é refletido.
+- [ ] Abaixo de `md` aparece a agenda por dia; a partir de `md`, a grade mensal; sem overflow horizontal.
+
+### RF-14 Tipo de cobrança da sessão
+- Cada sessão tem "Cobrança": **Particular** (padrão) ou **Convênio**.
+- Convênio mostra o campo de texto "Nome do convênio", obrigatório. Particular não guarda nome de convênio.
+- A cobrança aparece na lista de sessões ("Particular" ou "Convênio: <nome>") e no Dialog.
+- É só um registro da sessão: não gera nem altera lançamentos financeiros.
+
+**Aceite**
+- [ ] O padrão é Particular e o campo do convênio só aparece quando Convênio está selecionado.
+- [ ] Convênio sem nome não salva.
+- [ ] Trocar de Convênio para Particular e salvar remove o nome do convênio.
+
+### RF-15 Anexos (docx e pdf)
+- Pode-se anexar arquivos em dois lugares: **anamnese** (área "Anexos da anamnese" na aba) e **evolução de sessão** (no Dialog da sessão).
+- Só `.pdf` e `.docx`, até 10 MB por arquivo; outros formatos e arquivos maiores são recusados com mensagem em pt-BR.
+- Cada anexo lista nome, tamanho e data, com "Baixar" (devolve o arquivo original) e "Remover".
+- Os anexos são gravados junto com o Salvar do formulário; Cancelar descarta as adições e remoções.
+- Os arquivos ficam em IndexedDB no navegador (mock da Fase 1, `plan.md` §12), filtrados por tenant. A interface avisa que na Fase 1 os arquivos ficam só neste navegador, sem criptografia.
+- Arquivar paciente não apaga anexos.
+
+**Aceite**
+- [ ] Anexar PDF e DOCX na anamnese e numa sessão; continuam lá após recarregar.
+- [ ] `.txt`, `.png`, `.doc` e arquivos acima de 10 MB são recusados com mensagem.
+- [ ] Baixar devolve um arquivo idêntico ao anexado (nome e conteúdo).
+- [ ] Remover e salvar apaga o anexo; Cancelar descarta adições e remoções.
+- [ ] O aviso sobre armazenamento local é exibido junto à área de anexos.
 
 ## 4. Requisitos não funcionais
 - **Idioma/formatos:** pt-BR, datas `dd/mm/aaaa`, moeda BRL.
-- **Persistência do mock:** `localStorage`, para os dados sobreviverem ao recarregar.
-- **Privacidade:** dados fictícios nos mocks; CPF mascarado em listagens e no cabeçalho.
-- **Responsivo, mobile first:** layout desenhado para celular primeiro e adaptado para cima (tablet, desktop). Em telas estreitas, a tabela de pacientes vira lista de cartões, as abas do perfil ficam roláveis, e formulários e o Dialog de novo paciente ocupam a largura da tela. Navegação por teclado nos formulários.
+- **Persistência do mock:** `localStorage`, para os dados sobreviverem ao recarregar; anexos em IndexedDB, porque `localStorage` não guarda arquivo binário de forma confiável (`plan.md` §12).
+- **Privacidade:** dados fictícios nos mocks; CPF mascarado em listagens e no cabeçalho. Anexos ficam só no navegador, sem criptografia; não anexar documentos reais durante a Fase 1.
+- **Responsivo, mobile first:** layout desenhado para celular primeiro e adaptado para cima (tablet, desktop). Em telas estreitas, a tabela de pacientes vira lista de cartões, o calendário vira agenda por dia, as abas do perfil ficam roláveis, e formulários e os Dialogs de cadastro e de sessão ocupam a largura da tela. Navegação por teclado nos formulários.
 - **Impressão:** estilos `@media print` dedicados (independem do layout responsivo, seguem o formato A4 fixo).
 
 ## 5. Suposições a confirmar
@@ -137,6 +211,10 @@ Fonoaudióloga | CRFa <registro>
 2. O relatório do paciente reúne Dados, Anamnese, Prescrições e Financeiro à escolha.
 3. "Criança" é o paciente menor de 18 anos (adolescentes incluídos), editável manualmente.
 4. Prescrições ganham aba própria (além das quatro citadas), pois têm histórico e impressão próprios.
+5. Sessão tem três status (Agendada, Realizada, Cancelada) e não é excluída, só cancelada.
+6. Arquivar esconde o paciente da lista padrão e do calendário; nada é apagado e o perfil segue editável.
+7. Anexos aceitam só `.pdf` e `.docx` (não o `.doc` antigo), até 10 MB cada.
+8. Sessões e lançamentos são independentes: o nº de sessões do lançamento (RF-08) continua digitado, sem ser calculado a partir das sessões registradas.
 
 ---
 

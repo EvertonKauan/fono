@@ -21,6 +21,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import dayjs, { type Dayjs } from 'dayjs'
 import { useTenantId } from '../../../auth/useSession.ts'
 import { createPrescription, savePrescription } from '../../../services/prescriptions.ts'
+import { newId } from '../../../utils/id.ts'
 import type { Prescription } from '../../../types/domain.ts'
 
 type Props = {
@@ -32,7 +33,7 @@ type Props = {
 
 type Draft = { key: string; title: string; description: string }
 
-const blank = (): Draft => ({ key: crypto.randomUUID(), title: '', description: '' })
+const blank = (): Draft => ({ key: newId(), title: '', description: '' })
 
 // Montado só enquanto o Dialog está aberto, então o estado é descartado ao fechar.
 export default function PrescriptionDialog({ patientId, prescription, onClose, onSaved }: Props) {
@@ -40,7 +41,7 @@ export default function PrescriptionDialog({ patientId, prescription, onClose, o
   const fullScreen = useMediaQuery(useTheme().breakpoints.down('sm'))
   const [date, setDate] = useState<Dayjs | null>(() => dayjs(prescription?.date))
   const [exercises, setExercises] = useState<Draft[]>(() =>
-    prescription ? prescription.exercises.map((e) => ({ ...e, key: crypto.randomUUID() })) : [blank()],
+    prescription ? prescription.exercises.map((e) => ({ ...e, key: newId() })) : [blank()],
   )
   const [frequency, setFrequency] = useState(prescription?.frequency ?? '')
   const [focusKey, setFocusKey] = useState<string | null>(null)

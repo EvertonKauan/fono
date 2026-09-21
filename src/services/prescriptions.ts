@@ -1,5 +1,6 @@
 import type { Prescription } from '../types/domain.ts'
 import { selectRows, upsertRow } from './db.ts'
+import { newId } from '../utils/id.ts'
 
 // mais recente primeiro
 export async function listPrescriptions(tenantId: string, patientId: string): Promise<Prescription[]> {
@@ -12,7 +13,7 @@ export async function createPrescription(
   tenantId: string,
   input: Omit<Prescription, 'id' | 'tenantId'>,
 ): Promise<Prescription> {
-  const prescription: Prescription = { ...input, id: crypto.randomUUID(), tenantId }
+  const prescription: Prescription = { ...input, id: newId(), tenantId }
   upsertRow('prescriptions', tenantId, prescription)
   return prescription
 }

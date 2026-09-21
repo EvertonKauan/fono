@@ -36,20 +36,49 @@ Ordem de execução. Cada tarefa entrega o menor incremento utilizável e cita a
 - [x] **T21** Verificação manual de todos os critérios de aceite da spec e do isolamento entre tenants. *(RF-10)*
 - [x] **T22** Verificação responsiva: lista (cartões em `xs/sm`, tabela a partir de `md`), abas roláveis, Dialog em tela cheia no celular, formulários sem overflow horizontal. *(RNF responsivo)*
 
+## Expansão da Fase 1 (RF-11 a RF-15)
+Arquivar paciente, sessões com evolução e cobrança, calendário e anexos. Tudo continua front com mocks. Decisões já tomadas: sessões separadas dos lançamentos mensais (T12/T13 não mudam) e calendário como tela própria, não aba do paciente. Os ids novos usam `newId` (`plan.md` §13).
+
+## M6 — Arquivar e sessões
+- [ ] **T23** Modelo e dados: `Session` e `Patient.archivedAt` em `types/domain.ts`; tabela `sessions` em `db.ts` com a migração (tabelas ausentes preenchidas pelo seed, sem tocar nas existentes) e teste dela; `services/sessions.ts`; sessões e 1 paciente arquivado no `seed.ts`. *(RF-10, RF-11, RF-12; plan §5, §6, §9)*
+- [ ] **T24** Arquivar: `archivePatient`/`unarchivePatient`; botão "Arquivar paciente" com confirmação e "Desarquivar paciente" no perfil; chip "Arquivado" no cabeçalho e na lista; filtro "Situação" (padrão Ativos) e `filterPatients` com teste; com o filtro "Arquivados", botão "Desarquivar" direto em cada linha e cartão da lista. *(RF-11, RF-02, RF-04)*
+- [ ] **T25** `SessionDialog` compartilhado: data, horário, status, cobrança Particular/Convênio (nome obrigatório), evolução, validações; `fullScreen` abaixo de `sm`. *(RF-12, RF-14)*
+- [ ] **T26** `SessoesTab` e aba "Sessões" entre Anamnese e Prescrições: lista da mais recente para a mais antiga, nova sessão, editar, cobrança e resumo da evolução na linha, estado vazio. *(RF-12, RF-14, RF-04)*
+
+## M7 — Calendário
+- [ ] **T27** `AppLayout`: navegação Pacientes · Calendário e `--app-bar-height` no lugar de `APP_BAR_HEIGHT`. *(RF-13; plan §7)*
+- [ ] **T28** `CalendarPage` em `/calendario` (`?mes=`): navegação de mês e "Hoje", agenda por dia, clique abre o `SessionDialog`, oculta sessões de arquivados; `utils/calendar.ts` com teste. *(RF-13)*
+- [ ] **T29** `MonthGrid`: grade mensal a partir de `md`; abaixo de `md` continua a agenda. *(RF-13)*
+
+## M8 — Anexos
+- [ ] **T30** `services/attachments.ts` (IndexedDB) e `utils/files.ts` (`.pdf`/`.docx`, 10 MB), com testes usando `fake-indexeddb` (inclui isolamento por tenant). *(RF-15, RF-10; plan §12)*
+- [ ] **T31** `AttachmentsField` (rascunho em memória, baixar, remover, aviso de armazenamento local) integrado à `AnamneseTab`. *(RF-15, RF-06)*
+- [ ] **T32** Anexos na evolução do `SessionDialog`: Salvar aplica, Cancelar descarta. *(RF-15, RF-12)*
+
+## M9 — Fechamento da expansão
+- [ ] **T33** Acabamento: estados vazios, mensagens de erro em pt-BR e falha de gravação (`localStorage`/IndexedDB) sem travar botão nos formulários novos; atualizar `docs/known-issues.md`.
+- [ ] **T34** Verificação dos critérios de aceite de RF-11 a RF-15, do isolamento de sessões e anexos entre tenants (RF-10) e regressão de RF-01 a RF-09.
+- [ ] **T35** Verificação responsiva das telas novas (Sessões, Calendário em grade e em agenda, Dialogs, filtro de arquivados, anexos) em 360/390/1280 e nos limites `sm`/`md`. *(RNF responsivo)*
+
 ## Fase 2 (fora deste documento)
-Back-end e banco de dados; troca do miolo de `services/` por HTTP; autenticação real; emissão do recibo anual em PDF; agenda.
+Back-end e banco de dados; troca do miolo de `services/` por HTTP (inclui anexos em armazenamento de objetos); autenticação real; emissão do recibo anual em PDF; agenda avançada (recorrência, conflito de horários, criar sessão pelo calendário).
 
 ## Rastreabilidade
 | RF | Tarefas |
 |---|---|
 | RF-01 | T05, T06 |
-| RF-02 | T08 |
+| RF-02 | T08, T24 |
 | RF-03 | T09 |
-| RF-04 | T10 |
+| RF-04 | T10, T24, T26 |
 | RF-05 | T11 |
-| RF-06 | T14, T15 |
+| RF-06 | T14, T15, T31 |
 | RF-07 | T16, T17, T18 |
 | RF-08 | T12, T13 |
 | RF-09 | T16, T19 |
-| RF-10 | T04, T07, T21 |
-| Responsivo (RNF) | T22 (aplicado ao longo de M1–M4) |
+| RF-10 | T04, T07, T21, T23, T30, T34 |
+| RF-11 | T23, T24 |
+| RF-12 | T23, T25, T26, T32 |
+| RF-13 | T27, T28, T29 |
+| RF-14 | T25, T26 |
+| RF-15 | T30, T31, T32 |
+| Responsivo (RNF) | T22 (aplicado ao longo de M1–M4), T35 (telas novas) |

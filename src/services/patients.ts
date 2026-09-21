@@ -1,5 +1,6 @@
 import type { Patient, PatientKind } from '../types/domain.ts'
 import { selectRows, upsertRow } from './db.ts'
+import { newId } from '../utils/id.ts'
 
 export type NewPatient = { fullName: string; birthDate: string; kind: PatientKind; phone?: string }
 
@@ -14,7 +15,7 @@ export async function getPatient(tenantId: string, id: string): Promise<Patient 
 export async function createPatient(tenantId: string, input: NewPatient): Promise<Patient> {
   const patient: Patient = {
     ...input,
-    id: crypto.randomUUID(),
+    id: newId(),
     tenantId,
     guardians: [],
     visit: { fee: 0, weekdays: [] },
