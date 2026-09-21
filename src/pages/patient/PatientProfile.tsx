@@ -34,9 +34,6 @@ type TabKey = (typeof TABS)[number]['key']
 
 const isTab = (value: string | null): value is TabKey => TABS.some((tab) => tab.key === value)
 
-// altura da barra superior (AppLayout), para o cabeçalho do perfil grudar logo abaixo dela
-const APP_BAR_HEIGHT = 49
-
 type State = { patient: Patient | null; payments: Payment[] }
 
 export default function PatientProfile() {
@@ -89,7 +86,7 @@ export default function PatientProfile() {
 
   return (
     <Stack>
-      <Box sx={{ position: 'sticky', top: APP_BAR_HEIGHT, zIndex: (theme) => theme.zIndex.appBar - 1, bgcolor: 'background.default' }}>
+      <Box sx={{ position: 'sticky', top: 'var(--app-bar-height, 49px)', zIndex: (theme) => theme.zIndex.appBar - 1, bgcolor: 'background.default' }}>
         <PatientHeader
           patient={patient}
           pending={hasPending(payments)}

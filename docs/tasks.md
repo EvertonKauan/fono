@@ -46,9 +46,9 @@ Arquivar paciente, sessões com evolução e cobrança, calendário e anexos. Tu
 - [x] **T26** `SessoesTab` e aba "Sessões" entre Anamnese e Prescrições: lista da mais recente para a mais antiga, nova sessão, editar, cobrança e resumo da evolução na linha, estado vazio. *(RF-12, RF-14, RF-04)*
 
 ## M7 — Calendário
-- [ ] **T27** `AppLayout`: navegação Pacientes · Calendário e `--app-bar-height` no lugar de `APP_BAR_HEIGHT`. *(RF-13; plan §7)*
-- [ ] **T28** `CalendarPage` em `/calendario` (`?mes=`): navegação de mês e "Hoje", agenda por dia, clique abre o `SessionDialog`, oculta sessões de arquivados; `utils/calendar.ts` com teste. *(RF-13)*
-- [ ] **T29** `MonthGrid`: grade mensal a partir de `md`; abaixo de `md` continua a agenda. *(RF-13)*
+- [x] **T27** `AppLayout`: navegação Pacientes · Calendário e `--app-bar-height` no lugar de `APP_BAR_HEIGHT`. *(RF-13; plan §7)*
+- [x] **T28** `CalendarPage` em `/calendario` (`?mes=`): navegação de mês e "Hoje", agenda por dia, clique abre o `SessionDialog`, oculta sessões de arquivados; `utils/calendar.ts` com teste. *(RF-13)*
+- [x] **T29** `MonthGrid`: grade mensal a partir de `md`; abaixo de `md` continua a agenda. *(RF-13)*
 
 ## M8 — Anexos
 - [ ] **T30** `services/attachments.ts` (IndexedDB) e `utils/files.ts` (`.pdf`/`.docx`, 10 MB), com testes usando `fake-indexeddb` (inclui isolamento por tenant). *(RF-15, RF-10; plan §12)*
