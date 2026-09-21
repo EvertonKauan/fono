@@ -15,6 +15,7 @@ import dayjs, { type Dayjs } from 'dayjs'
 import { useTenantId } from '../../../auth/useSession.ts'
 import { useSave } from '../../../components/useSave.ts'
 import CpfField from '../../../components/CpfField.tsx'
+import PhoneField from '../../../components/PhoneField.tsx'
 import Toast from '../../../components/Toast.tsx'
 import { savePatient } from '../../../services/patients.ts'
 import type { Patient, PatientKind } from '../../../types/domain.ts'
@@ -157,14 +158,7 @@ export default function DadosTab({ patient, onSaved }: Props) {
             </TextField>
             <TextField label="Cidade" name="city" value={draft.city ?? ''} onChange={(event) => set('city', event.target.value)} />
             <TextField label="Endereço" name="address" value={draft.address ?? ''} onChange={(event) => set('address', event.target.value)} />
-            <TextField
-              label="Telefone"
-              name="phone"
-              type="tel"
-              value={draft.phone ?? ''}
-              onChange={(event) => set('phone', event.target.value)}
-              slotProps={{ htmlInput: { inputMode: 'tel', autoComplete: 'off' } }}
-            />
+            <PhoneField label="Telefone" name="phone" value={draft.phone ?? ''} onChange={(phone) => set('phone', phone)} />
             <TextField
               label="E-mail"
               name="email"
@@ -208,13 +202,11 @@ export default function DadosTab({ patient, onSaved }: Props) {
                           {...field(`guardian-${index}`)}
                         />
                         <TextField label="Parentesco" name={`guardianRelationship${index}`} value={guardian.relationship} onChange={(event) => setGuardian(index, { relationship: event.target.value })} />
-                        <TextField
+                        <PhoneField
                           label="Telefone do responsável"
                           name={`guardianPhone${index}`}
-                          type="tel"
                           value={guardian.phone ?? ''}
-                          onChange={(event) => setGuardian(index, { phone: event.target.value })}
-                          slotProps={{ htmlInput: { inputMode: 'tel', autoComplete: 'off' } }}
+                          onChange={(phone) => setGuardian(index, { phone })}
                         />
                       </Box>
                       <IconButton aria-label={`Remover responsável ${index + 1}`} onClick={() => set('guardians', draft.guardians.filter((_, i) => i !== index))}>

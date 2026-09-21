@@ -15,6 +15,7 @@ import { useTheme } from '@mui/material/styles'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import type { Dayjs } from 'dayjs'
 import { useTenantId } from '../../auth/useSession.ts'
+import PhoneField from '../../components/PhoneField.tsx'
 import { useSave } from '../../components/useSave.ts'
 import { createPatient } from '../../services/patients.ts'
 import type { PatientKind } from '../../types/domain.ts'
@@ -129,15 +130,7 @@ function NewPatientForm({ onClose }: { onClose: () => void }) {
             <MenuItem value="crianca">Criança</MenuItem>
             <MenuItem value="adulto">Adulto</MenuItem>
           </TextField>
-          <TextField
-            label="Telefone"
-            name="phone"
-            type="tel"
-            value={phone}
-            onChange={(event) => setPhone(event.target.value)}
-            fullWidth
-            slotProps={{ htmlInput: { inputMode: 'tel', autoComplete: 'off' } }}
-          />
+          <PhoneField label="Telefone" name="phone" value={phone} onChange={setPhone} fullWidth />
         </Stack>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
