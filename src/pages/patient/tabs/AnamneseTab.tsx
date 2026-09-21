@@ -80,7 +80,7 @@ function AnamneseForm({ patient, initial }: { patient: Patient; initial: Anamnes
   }
 
   return (
-    <Stack spacing={2} sx={{ maxWidth: 840 }}>
+    <Stack spacing={2} sx={{ maxWidth: 840, mx: 'auto' }}>
       <Typography variant="body2" color="text.secondary">
         Perguntas para {kindLabel[patient.kind]}. Trocar o tipo na aba Dados não apaga respostas já salvas.
       </Typography>

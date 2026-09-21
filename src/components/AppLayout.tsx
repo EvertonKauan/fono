@@ -7,6 +7,7 @@ import Container from '@mui/material/Container'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
 import CalendarMonth from '@mui/icons-material/CalendarMonth'
+import LibraryBooks from '@mui/icons-material/LibraryBooks'
 import Logout from '@mui/icons-material/Logout'
 import Person from '@mui/icons-material/Person'
 import { useSession } from '../auth/useSession.ts'
@@ -52,6 +53,9 @@ export default function AppLayout() {
               </Button>
               <Button component={NavLink} to="/calendario" color="inherit" size="small" startIcon={<CalendarMonth />} sx={navLink}>
                 Calendário
+              </Button>
+              <Button component={NavLink} to="/material" color="inherit" size="small" startIcon={<LibraryBooks />} sx={navLink}>
+                Material auxiliar
               </Button>
             </Box>
             <Button

@@ -46,7 +46,7 @@ export default function SessoesTab({ patient, onPaymentsChange }: Props) {
   if (!sessions) return null
 
   return (
-    <Box component="section" sx={{ maxWidth: 840 }}>
+    <Box component="section" sx={{ maxWidth: 840, mx: 'auto' }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={1} sx={{ mb: 1.5 }}>
         <Typography variant="h5" component="h2">
           Sessões

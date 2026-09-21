@@ -88,7 +88,7 @@ export type Session = {
   updatedAt: string
 }
 
-export type AttachmentOwner = { type: 'anamnese' | 'sessao'; id: string } // anamnese → patientId; sessao → Session.id
+export type AttachmentOwner = { type: 'anamnese' | 'sessao' | 'material'; id: string } // anamnese → patientId; sessao → Session.id; material → tenantId
 
 // Vive no IndexedDB (plan §12); a UI só recebe os metadados até baixar o arquivo.
 export type AttachmentMeta = {

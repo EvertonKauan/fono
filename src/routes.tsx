@@ -3,6 +3,7 @@ import LoginPage from './auth/LoginPage.tsx'
 import RequireAuth from './auth/RequireAuth.tsx'
 import AppLayout from './components/AppLayout.tsx'
 import CalendarPage from './pages/calendar/CalendarPage.tsx'
+import MaterialPage from './pages/material/MaterialPage.tsx'
 import PatientProfile from './pages/patient/PatientProfile.tsx'
 import PatientsPage from './pages/patients/PatientsPage.tsx'
 
@@ -14,6 +15,7 @@ export default function AppRoutes() {
         <Route element={<AppLayout />}>
           <Route path="/pacientes" element={<PatientsPage />} />
           <Route path="/calendario" element={<CalendarPage />} />
+          <Route path="/material" element={<MaterialPage />} />
           <Route path="/pacientes/:id" element={<PatientProfile />} />
         </Route>
       </Route>

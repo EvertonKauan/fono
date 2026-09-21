@@ -56,7 +56,7 @@ export default function RelatorioTab({ patient, payments }: Props) {
   )
 
   return (
-    <Stack spacing={2} component="section" sx={{ maxWidth: '210mm' }}>
+    <Stack spacing={2} component="section" sx={{ maxWidth: '210mm', mx: 'auto' }}>
       <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ sm: 'flex-end' }} gap={2}>
         <Box component="fieldset" sx={{ border: 0, p: 0, m: 0, minWidth: 0 }}>
           <FormLabel component="legend" sx={{ color: 'text.primary', fontWeight: 600 }}>

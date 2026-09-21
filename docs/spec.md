@@ -6,7 +6,7 @@ Sistema web para a fonoaudióloga cadastrar pacientes, registrar anamnese e pres
 **Usuário da Fase 1:** Claudionaria Torres, fonoaudióloga, CRFa 4-12096 (tenant `claudionaria`).
 
 ## 2. Escopo
-**Dentro (Fase 1):** login mockado, lista e cadastro de pacientes, perfil com abas, anamnese (criança/adulto), prescrições, financeiro, relatório imprimível, dados fiscais para recibos anuais, arquivamento de pacientes, sessões com valor, evolução e tipo de cobrança, lançamentos financeiros automáticos a partir das sessões realizadas, calendário de sessões (visões mês, semana e dia, com criação e edição de sessões), anexos (docx/pdf) na anamnese e na evolução de sessão.
+**Dentro (Fase 1):** login mockado, lista e cadastro de pacientes, perfil com abas, anamnese (criança/adulto), prescrições, financeiro, relatório imprimível, dados fiscais para recibos anuais, arquivamento de pacientes, sessões com valor, evolução e tipo de cobrança, lançamentos financeiros automáticos a partir das sessões realizadas, calendário de sessões (visões mês, semana e dia, com criação e edição de sessões), anexos (docx/pdf) na anamnese e na evolução de sessão, e a tela Material auxiliar (material da profissional e documentos anexados pelo profissional).
 
 **Fora (por enquanto):** back-end, autenticação real, agenda avançada (recorrência, conflito de horários, arrastar para reagendar, duração da sessão), emissão do recibo em PDF (só guardamos os dados), múltiplos usuários por tenant, anexos em outras telas ou em outros formatos, excluir paciente ou sessão (existem arquivar e cancelar).
 
@@ -28,11 +28,13 @@ Sistema web para a fonoaudióloga cadastrar pacientes, registrar anamnese e pres
 - Filtro "Situação" (Ativos · Arquivados · Todos), com **Ativos** como padrão: pacientes arquivados (RF-11) ficam escondidos e ganham o chip "Arquivado" quando exibidos.
 - Clique na linha abre o perfil. Botão "Novo paciente".
 - Pagamento "Pendente" usa a cor de alerta.
+- **Desktop (a partir de `md`):** acima da lista, uma faixa de resumo com três indicadores: **Pacientes ativos** (e quantos estão cadastrados), **Pagamento pendente** (pacientes ativos com lançamento pendente; é clicável e liga/desliga o filtro "Pagamento pendente") e **Sessões nesta semana** (domingo a sábado, agendadas e realizadas, de pacientes ativos). A lista traz o nome com um avatar de iniciais, o tipo como etiqueta, linhas mais altas e o cabeçalho da tabela em destaque; a busca e os filtros ficam num painel. Abaixo de `md` continuam os cartões, sem a faixa.
 
 **Aceite**
 - [ ] Filtrar "pendentes" mostra só pacientes com algum lançamento pendente.
 - [ ] Busca por nome funciona sem diferenciar maiúsculas/acentos.
 - [ ] Por padrão a lista não mostra pacientes arquivados.
+- [ ] No desktop, a faixa mostra os números certos (ativos de cadastrados, pendentes, sessões da semana); clicar em "Pagamento pendente" filtra a lista e clicar de novo desfaz.
 
 ### RF-03 Cadastro de paciente
 - "Novo paciente" abre um Dialog com o mínimo: nome completo, data de nascimento, tipo, telefone.
@@ -212,7 +214,7 @@ Comportamento inspirado no Google Calendar (visões, prévia e criar no horário
 - [ ] Trocar de Convênio para Particular e salvar remove o nome do convênio.
 
 ### RF-15 Anexos (docx e pdf)
-- Pode-se anexar arquivos em dois lugares: **anamnese** (área "Anexos da anamnese" na aba) e **evolução de sessão** (no Dialog da sessão).
+- Pode-se anexar arquivos em três lugares: **anamnese** (área "Anexos da anamnese" na aba), **evolução de sessão** (no Dialog da sessão) e **Material auxiliar** (RF-16).
 - Só `.pdf` e `.docx`, até 10 MB por arquivo; outros formatos e arquivos maiores são recusados com mensagem em pt-BR.
 - Cada anexo lista nome, tamanho e data, com "Baixar" (devolve o arquivo original) e "Remover".
 - Os anexos são gravados junto com o Salvar do formulário; Cancelar descarta as adições e remoções.
@@ -225,6 +227,22 @@ Comportamento inspirado no Google Calendar (visões, prévia e criar no horário
 - [ ] Baixar devolve um arquivo idêntico ao anexado (nome e conteúdo).
 - [ ] Remover e salvar apaga o anexo; Cancelar descarta adições e remoções.
 - [ ] O aviso sobre armazenamento local é exibido junto à área de anexos.
+
+### RF-16 Material auxiliar
+- Tela própria em `/material` (rota protegida), com o link "Material auxiliar" no topo, ao lado de "Pacientes" e "Calendário". Não é aba de paciente: o material é da clínica.
+- **Material da profissional:** o que já vem com o sistema. Hoje é um só, o PDF `treino-de-fala.pdf` (arquivo na raiz do repositório), com "Abrir" (nova aba do navegador) e "Baixar". Não é removido nem trocado pela tela.
+- **Documentos anexados:** o profissional anexa documentos da clínica (mesma área e mesmas regras do RF-15: só `.pdf` e `.docx`, até 10 MB, nome, tamanho e data, "Baixar" e "Remover", aviso de armazenamento local). Os anexos são gravados com o "Salvar material"; sair da tela sem salvar descarta as adições e remoções.
+- Cada tenant vê só o próprio material anexado; o material da profissional embutido é o mesmo para todos.
+
+**Aceite**
+- [ ] O link "Material auxiliar" aparece no topo ao lado de "Pacientes" e "Calendário"; o perfil do paciente não tem aba de material.
+- [ ] A tela mostra `treino-de-fala.pdf` em "Material da profissional", em qualquer tenant.
+- [ ] "Baixar" devolve um arquivo idêntico ao `treino-de-fala.pdf` da raiz do repositório; "Abrir" mostra o PDF numa nova aba.
+- [ ] Anexar PDF e DOCX e salvar: continuam lá após recarregar.
+- [ ] `.txt`, `.png`, `.doc` e arquivos acima de 10 MB são recusados com mensagem em pt-BR.
+- [ ] Remover e salvar apaga o anexo; sair sem salvar descarta.
+- [ ] O material da profissional não tem "Remover"; os anexos de um tenant não aparecem em outro.
+- [ ] Sem overflow horizontal em nenhuma largura; o link cabe na barra do celular.
 
 ## 4. Requisitos não funcionais
 - **Idioma/formatos:** pt-BR, datas `dd/mm/aaaa`, moeda BRL.
@@ -251,6 +269,7 @@ Comportamento inspirado no Google Calendar (visões, prévia e criar no horário
 15. Lançamento Pago nunca é alterado automaticamente. Trocar a data de uma sessão já contada para outro mês também não a move de lançamento (limitações conhecidas).
 16. "Editar valor" existe em qualquer lançamento (Pendente ou Pago). Se um "Desfazer" deixar dois lançamentos Pendentes na mesma competência, a soma automática vai para o último da lista.
 17. Sem horário de atendimento no paciente, o Dialog de sessão não sugere mais horário: ele vem só do clique no calendário ou fica vazio.
+18. O material da profissional é fixo e vem embutido no aplicativo (o `treino-de-fala.pdf` da raiz do repositório): vale para todos os pacientes e tenants, e trocá-lo exige mudar o arquivo e gerar uma nova versão do sistema. Os documentos anexados pelo profissional pertencem à clínica (tenant), não a um paciente.
 
 ---
 

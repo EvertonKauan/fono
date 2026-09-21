@@ -77,8 +77,18 @@ Revisão do RF-08 e do RF-12: substitui a decisão "sessões separadas dos lanç
 - [x] **T45** `SessionDialog`: campo Valor (`MoneyField`, obrigatório e maior que zero) com a sugestão da sessão mais recente do paciente (também ao escolher o paciente no calendário); sem sugestão de horário; valor na lista da aba Sessões e na prévia do calendário; a aba Sessões recarrega os lançamentos do perfil para o chip de pagamento. *(RF-12, RF-13; plan §7)*
 - [x] **T46** `FinanceiroTab`: remover o bloco Atendimento, o "Novo lançamento" e o `NewPaymentDialog`; nº de sessões só leitura; ação "Editar valor" (`EditPaymentDialog`); marcar como pago, desfazer e resumo do ano continuam; estado vazio explicando os lançamentos automáticos. *(RF-08; plan §7)*
 - [x] **T47** Retirar `Patient.visit` por completo: tipo, `createPatient`, `seed.ts` e a migração (que passa a remover o campo dos dados já salvos, com teste); colunas "Dias de atendimento" e "Valor da consulta" da lista (tabela e cartões), `PatientRow`, cabeçalho do perfil, linhas de atendimento do `ReportDocument`, `formatWeekdays` e testes afetados. *(RF-02, RF-04, RF-09; plan §5, §6, §7)*
-- [ ] **T48** Verificação dos critérios de aceite revisados de RF-08 e RF-12 (e o ajuste de RF-14), isolamento entre tenants dos lançamentos automáticos (RF-10) e regressão de RF-01 a RF-15, atualizando os scripts que usavam "Atendimento" e "Novo lançamento"; registrar em `docs/known-issues.md` as limitações do Pago, da troca de mês e das sessões migradas. *(RF-08, RF-10, RF-12)*
-- [ ] **T49** Verificação responsiva das telas alteradas (Financeiro sem o bloco e com "Editar valor", Dialog da sessão com Valor, lista e cabeçalho sem as colunas de atendimento) em 360/390/1280 e nos limites `sm`/`md`. *(RNF responsivo)*
+- [x] **T48** Verificação dos critérios de aceite revisados de RF-08 e RF-12 (e o ajuste de RF-14), isolamento entre tenants dos lançamentos automáticos (RF-10) e regressão de RF-01 a RF-15, atualizando os scripts que usavam "Atendimento" e "Novo lançamento"; registrar em `docs/known-issues.md` as limitações do Pago, da troca de mês e das sessões migradas. *(RF-08, RF-10, RF-12)*
+- [x] **T49** Verificação responsiva das telas alteradas (Financeiro sem o bloco e com "Editar valor", Dialog da sessão com Valor, lista e cabeçalho sem as colunas de atendimento) em 360/390/1280 e nos limites `sm`/`md`. *(RNF responsivo)*
+
+## M12 — Material auxiliar
+Nova tela (RF-16), ao lado de Pacientes e Calendário no topo: material da profissional (o `treino-de-fala.pdf` da raiz do repositório) e documentos anexados pelo profissional, reaproveitando a infraestrutura de anexos do RF-15.
+- [x] **T50** `MaterialPage` em `/material` e link "Material auxiliar" no `AppLayout`: `AttachmentOwner`/`Attachment` com `'material'` (dono = tenant); `mocks/materials.ts` com o PDF da raiz embutido pelo build; bloco "Material da profissional" (Abrir e Baixar, sem Remover) e bloco "Documentos anexados" com `AttachmentsField` e "Salvar material". *(RF-16, RF-15; plan §4, §5, §7)*
+- [x] **T51** Verificação dos critérios de aceite do RF-16, do isolamento entre tenants, da regressão (perfil sem aba nova, navegação e RF-15) e do responsivo em 360/390/1280 e nos limites `sm`/`md`; registrar em `docs/known-issues.md` o que for limitação. *(RF-16, RF-10, RNF responsivo)*
+
+## M13 — Lista de pacientes mais forte no desktop
+Pedido de produto: a tela principal precisa passar mais valor logo de cara. Continua tabela (constitution), só ganha informação útil e hierarquia; sem cor, fonte ou sombra novas. Abaixo de `md` nada muda.
+- [x] **T52** `PatientsSummary` (pacientes ativos, pagamento pendente clicável que filtra, sessões da semana) acima da busca; busca e filtros num painel; nome com `Avatar` de iniciais, tipo como etiqueta, linhas mais altas e cabeçalho em destaque via `theme.ts`; `summarizePatients` e `initialsOf` com testes. *(RF-02; plan §7)*
+- [x] **T53** Verificação dos números e do filtro da faixa, da lista (colunas, busca, filtros, arquivados) e do responsivo (faixa só a partir de `md`, cartões abaixo) em 360/390/900/1280, com regressão de RF-02. *(RF-02, RNF responsivo)*
 
 ## Fase 2 (fora deste documento)
 Back-end e banco de dados; troca do miolo de `services/` por HTTP (inclui anexos em armazenamento de objetos); autenticação real; emissão do recibo anual em PDF; agenda avançada (recorrência, conflito de horários, arrastar para reagendar, duração da sessão).
@@ -87,7 +97,7 @@ Back-end e banco de dados; troca do miolo de `services/` por HTTP (inclui anexos
 | RF | Tarefas |
 |---|---|
 | RF-01 | T05, T06 |
-| RF-02 | T08, T24, T47 |
+| RF-02 | T08, T24, T47, T52, T53 |
 | RF-03 | T09 |
 | RF-04 | T10, T24, T26, T47 |
 | RF-05 | T11 |
@@ -95,10 +105,11 @@ Back-end e banco de dados; troca do miolo de `services/` por HTTP (inclui anexos
 | RF-07 | T16, T17, T18 |
 | RF-08 | T12, T13, T43, T44, T46, T48 |
 | RF-09 | T16, T19, T47 |
-| RF-10 | T04, T07, T21, T23, T30, T34, T41, T43, T48 |
+| RF-10 | T04, T07, T21, T23, T30, T34, T41, T43, T48, T51 |
 | RF-11 | T23, T24, T39 |
 | RF-12 | T23, T25, T26, T32, T39, T43, T45, T48 |
 | RF-13 | T27, T28, T29, T36, T37, T38, T39, T40, T41, T45 |
 | RF-14 | T25, T26 |
-| RF-15 | T30, T31, T32 |
-| Responsivo (RNF) | T22 (aplicado ao longo de M1–M4), T35 (telas novas), T42 (visões novas do calendário), T49 (telas alteradas pelo M11) |
+| RF-15 | T30, T31, T32, T50 |
+| RF-16 | T50, T51 |
+| Responsivo (RNF) | T22 (aplicado ao longo de M1–M4), T35 (telas novas), T42 (visões novas do calendário), T49 (telas alteradas pelo M11), T51 (Material auxiliar), T53 (lista de pacientes) |
