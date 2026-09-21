@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
+import Avatar from '@mui/material/Avatar'
 import Button from '@mui/material/Button'
 import Chip from '@mui/material/Chip'
 import Link from '@mui/material/Link'
@@ -14,16 +15,20 @@ const baseColumns: GridColDef<PatientRow>[] = [
   {
     field: 'fullName',
     headerName: 'Nome',
-    flex: 1,
-    minWidth: 140,
+    flex: 2,
+    minWidth: 240,
     renderCell: ({ row }) => (
-      <Stack direction="row" alignItems="center" gap={1} sx={{ minWidth: 0 }}>
+      <Stack direction="row" alignItems="center" gap={1.5} sx={{ minWidth: 0 }}>
+        <Avatar aria-hidden sx={{ width: 36, height: 36 }}>
+          {row.initials}
+        </Avatar>
         <Link
           component={RouterLink}
           to={`/pacientes/${row.id}`}
           color="inherit"
           underline="hover"
           noWrap
+          sx={{ fontWeight: 600 }}
           onClick={(event) => event.stopPropagation()}
         >
           {row.fullName}
@@ -32,12 +37,19 @@ const baseColumns: GridColDef<PatientRow>[] = [
       </Stack>
     ),
   },
-  { field: 'kind', headerName: 'Tipo', width: 80 },
+  {
+    field: 'kind',
+    headerName: 'Tipo',
+    flex: 0.7,
+    minWidth: 100,
+    renderCell: ({ row }) => <Chip label={row.kind} variant="outlined" />,
+  },
   {
     field: 'age',
     headerName: 'Idade',
     type: 'number',
-    width: 80,
+    flex: 0.6,
+    minWidth: 90,
     align: 'left',
     headerAlign: 'left',
     valueFormatter: (value: number) => formatAge(value),
@@ -46,12 +58,13 @@ const baseColumns: GridColDef<PatientRow>[] = [
     field: 'pending',
     headerName: 'Pagamento',
     type: 'boolean',
-    width: 115,
+    flex: 0.9,
+    minWidth: 120,
     align: 'left',
     headerAlign: 'left',
     renderCell: ({ row }) => <PaymentChip pending={row.pending} />,
   },
-  { field: 'phone', headerName: 'Telefone', width: 135 },
+  { field: 'phone', headerName: 'Telefone', flex: 1, minWidth: 150 },
 ]
 
 type Props = {
@@ -100,6 +113,8 @@ export default function PatientsTable({ rows, loading, onUnarchive }: Props) {
       loading={loading}
       autoHeight
       disableColumnMenu
+      disableColumnResize
+      rowHeight={60}
       disableRowSelectionOnClick
       onRowClick={({ row }) => navigate(`/pacientes/${row.id}`)}
       initialState={{

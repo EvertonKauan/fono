@@ -16,14 +16,18 @@ import { useTenantId } from '../../auth/useSession.ts'
 import Toast from '../../components/Toast.tsx'
 import { listPatients, unarchivePatient } from '../../services/patients.ts'
 import { listPayments } from '../../services/payments.ts'
+import { listSessionsBetween } from '../../services/sessions.ts'
 import type { Patient } from '../../types/domain.ts'
+import { weekOf, todayIso } from '../../utils/calendar.ts'
 import { SAVE_ERROR } from '../../utils/messages.ts'
+import { toCalendarItems } from '../calendar/calendarItems.ts'
 import NewPatientDialog from './NewPatientDialog.tsx'
 import PatientCards from './PatientCards.tsx'
+import PatientsSummary from './PatientsSummary.tsx'
 import PatientsTable from './PatientsTable.tsx'
-import { filterPatients, toRow, type PatientFilters, type PatientStatus } from './patientRows.ts'
+import { filterPatients, summarizePatients, toRow, type PatientFilters, type PatientStatus } from './patientRows.ts'
 
-type Data = { patients: Patient[]; pendingIds: Set<string> }
+type Data = { patients: Patient[]; pendingIds: Set<string>; weekSessions: number }
 
 function emptyMessage(data: Data, status: PatientStatus) {
   const archived = data.patients.filter((p) => p.archivedAt).length
@@ -49,11 +53,15 @@ export default function PatientsPage() {
 
   useEffect(() => {
     let active = true
-    Promise.all([listPatients(tenantId), listPayments(tenantId)]).then(([patients, payments]) => {
-      if (!active) return
-      const pendingIds = new Set(payments.filter((p) => p.status === 'pendente').map((p) => p.patientId))
-      setData({ patients, pendingIds })
-    })
+    const week = weekOf(todayIso())
+    Promise.all([listPatients(tenantId), listPayments(tenantId), listSessionsBetween(tenantId, week[0]!, week[6]!)]).then(
+      ([patients, payments, sessions]) => {
+        if (!active) return
+        const pendingIds = new Set(payments.filter((p) => p.status === 'pendente').map((p) => p.patientId))
+        const weekSessions = toCalendarItems(sessions, patients).filter((item) => item.session.status !== 'cancelada').length
+        setData({ patients, pendingIds, weekSessions })
+      },
+    )
     return () => {
       active = false
     }
@@ -84,12 +92,28 @@ export default function PatientsPage() {
     <Stack spacing={2}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" gap={2} flexWrap="wrap">
         <Typography variant="h1">Pacientes</Typography>
-        <Button variant="contained" startIcon={<Add />} onClick={() => setDialogOpen(true)}>
+        <Button variant="contained" size="large" startIcon={<Add />} onClick={() => setDialogOpen(true)}>
           Novo paciente
         </Button>
       </Stack>
 
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1.5, sm: 2 }} alignItems={{ sm: 'center' }}>
+      {data && isDesktop && (
+        <PatientsSummary
+          summary={summarizePatients(data.patients, data.pendingIds)}
+          weekSessions={data.weekSessions}
+          onlyPending={filters.onlyPending}
+          onTogglePending={() => setFilters({ ...filters, onlyPending: !filters.onlyPending })}
+        />
+      )}
+
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        spacing={{ xs: 1.5, sm: 2 }}
+        alignItems={{ sm: 'center' }}
+        sx={(theme) => ({
+          [theme.breakpoints.up('md')]: { p: 2, border: 1, borderColor: 'divider', borderRadius: 1, bgcolor: 'background.paper' },
+        })}
+      >
         <TextField
           label="Buscar por nome"
           name="busca"

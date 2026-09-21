@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Patient } from '../../types/domain.ts'
-import { filterPatients, type PatientFilters } from './patientRows.ts'
+import { filterPatients, initialsOf, summarizePatients, type PatientFilters } from './patientRows.ts'
 
 const make = (id: string, fullName: string, kind: Patient['kind'], archivedAt?: string): Patient => ({
   id,
@@ -47,5 +47,29 @@ describe('filterPatients', () => {
   it('a situação combina com os demais filtros', () => {
     expect(ids({ status: 'ativos', onlyPending: true })).toEqual(['2'])
     expect(ids({ status: 'arquivados', kind: 'crianca' })).toEqual([])
+  })
+})
+
+describe('initialsOf', () => {
+  it('usa a primeira letra do primeiro e do último nome, em maiúscula', () => {
+    expect(initialsOf('Miguel Andrade Lopes')).toBe('ML')
+    expect(initialsOf('lívia cardoso prado')).toBe('LP')
+    expect(initialsOf('Ana Silva')).toBe('AS')
+  })
+
+  it('nome único, espaços sobrando e vazio', () => {
+    expect(initialsOf('Cher')).toBe('C')
+    expect(initialsOf('  Maria   de   Souza  ')).toBe('MS')
+    expect(initialsOf('   ')).toBe('')
+  })
+})
+
+describe('summarizePatients', () => {
+  it('conta ativos, total e pendentes só entre os ativos', () => {
+    expect(summarizePatients(patients, pending)).toEqual({ active: 3, total: 4, pending: 1 })
+  })
+
+  it('sem pacientes, tudo zero', () => {
+    expect(summarizePatients([], new Set())).toEqual({ active: 0, total: 0, pending: 0 })
   })
 })

@@ -1,4 +1,4 @@
-import { createTheme, type Shadows } from '@mui/material/styles'
+import { alpha, createTheme, type Shadows } from '@mui/material/styles'
 import { ptBR as corePtBR } from '@mui/material/locale'
 import { ptBR as gridPtBR } from '@mui/x-data-grid/locales'
 import { ptBR as pickersPtBR } from '@mui/x-date-pickers/locales'
@@ -90,13 +90,32 @@ export const theme = createTheme(
       MuiButton: { defaultProps: { disableElevation: true } },
       MuiTextField: { defaultProps: { size: 'small' } },
       MuiDataGrid: {
-        defaultProps: { density: 'compact' },
+        defaultProps: { density: 'standard' },
         styleOverrides: {
           root: ({ theme }) => ({
             border: `1px solid ${theme.palette.divider}`,
-            '--DataGrid-t-header-background-base': theme.palette.background.default,
+            '--DataGrid-t-header-background-base': alpha(theme.palette.primary.main, 0.07),
+            '& .MuiDataGrid-columnSeparator': { display: 'none' },
+            '& .MuiDataGrid-row:hover': { backgroundColor: alpha(theme.palette.primary.main, 0.06) },
           }),
-          columnHeaderTitle: { fontWeight: 600 },
+          columnHeaderTitle: ({ theme }) => ({
+            fontWeight: 700,
+            fontSize: '0.75rem',
+            letterSpacing: '0.04em',
+            textTransform: 'uppercase',
+            color: theme.palette.primary.dark,
+          }),
+        },
+      },
+      MuiAvatar: {
+        styleOverrides: {
+          root: ({ theme }) => ({
+            backgroundColor: alpha(theme.palette.primary.main, 0.14),
+            color: theme.palette.primary.dark,
+            fontFamily: headingFont,
+            fontWeight: 600,
+            fontSize: '0.875rem',
+          }),
         },
       },
       MuiChip: {
