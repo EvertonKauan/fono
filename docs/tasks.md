@@ -60,8 +60,18 @@ Arquivar paciente, sessões com evolução e cobrança, calendário e anexos. Tu
 - [x] **T34** Verificação dos critérios de aceite de RF-11 a RF-15, do isolamento de sessões e anexos entre tenants (RF-10) e regressão de RF-01 a RF-09.
 - [x] **T35** Verificação responsiva das telas novas (Sessões, Calendário em grade e em agenda, Dialogs, filtro de arquivados, anexos) em 360/390/1280 e nos limites `sm`/`md`. *(RNF responsivo)*
 
+## M10 — Calendário estilo Google (comportamento)
+Revisão do RF-13: substitui a decisão "o calendário só mostra e edita". Agora ele também cria sessões, tem visões Mês/Semana/Dia e uma prévia ao clicar. Só o comportamento muda; cores, fontes, bordas e ícones seguem o tema. Arrastar para reagendar fica fora do escopo.
+- [ ] **T36** `utils/calendar.ts` para as visões (`weekOf`, `viewRange`, `shiftDate`, `rangeLabel`, fatias de 30 minutos e faixa de horas) com testes; `CalendarPage` com seletor Mês/Semana/Dia, `?visao=&data=`, anterior/próximo/"Hoje" por visão; Mês e Semana abaixo de `md` como agenda; número e título do dia levam à visão Dia. *(RF-13; plan §4, §7)*
+- [ ] **T37** `TimeGrid`: grade de horários (Semana a partir de `md`, Dia em todas as larguras), linha "Sem horário", sessões empilhadas por fatia, hoje destacado; seed com dois pacientes no mesmo horário. *(RF-13)*
+- [ ] **T38** `SessionPreview` (Popover) em todas as visões, com paciente, dia/horário, status, cobrança e "Editar" que abre o `SessionDialog`; Esc ou clicar fora fecha. *(RF-13)*
+- [ ] **T39** `SessionDialog` com escolha de paciente (`Autocomplete`, só ativos do tenant, sem acento, obrigatório) e `initialDate`/`initialTime`; sugestão do horário do paciente; teste da lista de opções. *(RF-13, RF-11, RF-12)*
+- [ ] **T40** Criar no calendário: clique em horário vazio (`TimeGrid`), em dia vazio (Mês) e botão "Nova sessão" no topo; a sessão aparece no calendário e na aba Sessões. *(RF-13)*
+- [ ] **T41** Verificação dos critérios de aceite revisados do RF-13, do isolamento (calendário e busca de paciente entre tenants, arquivados fora da busca) e regressão de RF-11, RF-12, RF-14 e RF-15. *(RF-10, RF-13)*
+- [ ] **T42** Verificação responsiva das visões novas (Semana, Dia, prévia, criação e agenda) em 360/390/1280 e nos limites `sm`/`md`; registrar em `docs/known-issues.md` qualquer limitação nova. *(RNF responsivo)*
+
 ## Fase 2 (fora deste documento)
-Back-end e banco de dados; troca do miolo de `services/` por HTTP (inclui anexos em armazenamento de objetos); autenticação real; emissão do recibo anual em PDF; agenda avançada (recorrência, conflito de horários, criar sessão pelo calendário).
+Back-end e banco de dados; troca do miolo de `services/` por HTTP (inclui anexos em armazenamento de objetos); autenticação real; emissão do recibo anual em PDF; agenda avançada (recorrência, conflito de horários, arrastar para reagendar, duração da sessão).
 
 ## Rastreabilidade
 | RF | Tarefas |
@@ -75,10 +85,10 @@ Back-end e banco de dados; troca do miolo de `services/` por HTTP (inclui anexos
 | RF-07 | T16, T17, T18 |
 | RF-08 | T12, T13 |
 | RF-09 | T16, T19 |
-| RF-10 | T04, T07, T21, T23, T30, T34 |
-| RF-11 | T23, T24 |
-| RF-12 | T23, T25, T26, T32 |
-| RF-13 | T27, T28, T29 |
+| RF-10 | T04, T07, T21, T23, T30, T34, T41 |
+| RF-11 | T23, T24, T39 |
+| RF-12 | T23, T25, T26, T32, T39 |
+| RF-13 | T27, T28, T29, T36, T37, T38, T39, T40, T41 |
 | RF-14 | T25, T26 |
 | RF-15 | T30, T31, T32 |
-| Responsivo (RNF) | T22 (aplicado ao longo de M1–M4), T35 (telas novas) |
+| Responsivo (RNF) | T22 (aplicado ao longo de M1–M4), T35 (telas novas), T42 (visões novas do calendário) |

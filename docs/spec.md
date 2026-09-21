@@ -6,9 +6,9 @@ Sistema web para a fonoaudióloga cadastrar pacientes, registrar anamnese e pres
 **Usuário da Fase 1:** Claudionaria Torres, fonoaudióloga, CRFa 4-12096 (tenant `claudionaria`).
 
 ## 2. Escopo
-**Dentro (Fase 1):** login mockado, lista e cadastro de pacientes, perfil com abas, anamnese (criança/adulto), prescrições, financeiro, relatório imprimível, dados fiscais para recibos anuais, arquivamento de pacientes, sessões com evolução e tipo de cobrança, calendário de sessões, anexos (docx/pdf) na anamnese e na evolução de sessão.
+**Dentro (Fase 1):** login mockado, lista e cadastro de pacientes, perfil com abas, anamnese (criança/adulto), prescrições, financeiro, relatório imprimível, dados fiscais para recibos anuais, arquivamento de pacientes, sessões com evolução e tipo de cobrança, calendário de sessões (visões mês, semana e dia, com criação e edição de sessões), anexos (docx/pdf) na anamnese e na evolução de sessão.
 
-**Fora (por enquanto):** back-end, autenticação real, agenda avançada (recorrência, conflito de horários, criar sessão pelo calendário), emissão do recibo em PDF (só guardamos os dados), múltiplos usuários por tenant, anexos em outras telas ou em outros formatos, excluir paciente ou sessão (existem arquivar e cancelar).
+**Fora (por enquanto):** back-end, autenticação real, agenda avançada (recorrência, conflito de horários, arrastar para reagendar, duração da sessão), emissão do recibo em PDF (só guardamos os dados), múltiplos usuários por tenant, anexos em outras telas ou em outros formatos, excluir paciente ou sessão (existem arquivar e cancelar).
 
 ## 3. Requisitos funcionais
 
@@ -137,13 +137,13 @@ Fonoaudióloga | CRFa <registro>
 - A lista de pacientes esconde arquivados por padrão; o filtro "Situação" (RF-02) mostra só arquivados ou todos.
 - Com o filtro "Arquivados" ativo, cada linha da tabela e cada cartão da lista tem o botão "Desarquivar" (sem confirmação), sem precisar abrir o perfil.
 - O perfil de um arquivado continua acessível e editável.
-- Sessões de pacientes arquivados não aparecem no calendário (RF-13); continuam na aba Sessões do paciente.
+- Sessões de pacientes arquivados não aparecem no calendário (RF-13); continuam na aba Sessões do paciente. Arquivados também não aparecem na busca de paciente ao criar sessão pelo calendário.
 
 **Aceite**
 - [ ] Arquivar tira o paciente da lista padrão sem apagar nada (dados, sessões, financeiro e anexos seguem no perfil).
 - [ ] Cancelar a confirmação não altera o paciente.
 - [ ] Filtro "Arquivados" lista só arquivados; "Todos" lista ativos e arquivados, com o chip "Arquivado".
-- [ ] Desarquivar devolve o paciente à lista padrão e ao calendário.
+- [ ] Desarquivar devolve o paciente à lista padrão, ao calendário e à busca de paciente para nova sessão.
 - [ ] Com o filtro "Arquivados", o botão "Desarquivar" da linha ou do cartão tira o paciente da lista de arquivados sem abrir o perfil.
 
 ### RF-12 Aba Sessões (evolução)
@@ -151,7 +151,7 @@ Fonoaudióloga | CRFa <registro>
 - Sessão: data (obrigatória), horário (opcional; sugere o horário de atendimento do paciente), status (**Agendada** padrão · Realizada · Cancelada), cobrança (RF-14), **evolução** (texto livre com o que aconteceu na sessão, opcional) e anexos (RF-15).
 - Sessões não são excluídas; a que não acontece fica "Cancelada".
 - Sessões são independentes dos lançamentos financeiros mensais (RF-08): criar ou editar sessão não cria nem altera lançamento, e o nº de sessões do lançamento continua digitado.
-- O formulário de edição (Dialog) é o mesmo usado no calendário (RF-13).
+- O formulário (Dialog) de criação e edição é o mesmo usado no calendário (RF-13); no calendário ele ganha, no topo, o campo de escolha do paciente.
 
 **Aceite**
 - [ ] A lista mostra as sessões da mais recente para a mais antiga.
@@ -160,18 +160,30 @@ Fonoaudióloga | CRFa <registro>
 - [ ] Criar ou editar sessão não muda nenhum lançamento nem o chip de pagamento.
 
 ### RF-13 Calendário
+Comportamento inspirado no Google Calendar (visões, prévia e criar no horário); a aparência segue o tema do projeto (constitution).
+
 - Tela própria em `/calendario` (rota protegida), com link "Calendário" ao lado de "Pacientes" no topo. Não é aba de paciente.
-- Mostra as sessões de todos os pacientes ativos do tenant, por mês, com navegação mês anterior / próximo / "Hoje".
-- A partir de `md`: grade mensal (semana de domingo a sábado), com hora e nome do paciente dentro de cada dia. Abaixo de `md`: agenda, lista agrupada por dia (só dias com sessão).
-- Realizada aparece com ícone de check; Cancelada, riscada. Mês sem sessões mostra mensagem.
-- Clicar numa sessão abre o mesmo Dialog de edição da aba Sessões (RF-12); ao salvar, o calendário atualiza.
-- Sessões são criadas na aba Sessões do paciente, não no calendário.
+- Mostra as sessões de todos os pacientes ativos do tenant.
+- **Seletor de visão** Mês · Semana · Dia (padrão: Mês), com anterior / próximo (avançam um mês, uma semana ou um dia) e "Hoje". A visão e a data ficam na URL (`?visao=` e `?data=`), então recarregar a página mantém o que estava na tela.
+- **Mês:** a partir de `md`, grade mensal (domingo a sábado), com hora e nome do paciente em cada dia; abaixo de `md`, agenda (lista agrupada por dia, só dias com sessão).
+- **Semana:** a partir de `md`, grade de 7 dias (domingo a sábado) com linhas de horário de 30 em 30 minutos; abaixo de `md`, agenda da semana.
+- **Dia:** grade de horários de um único dia, em todas as larguras.
+- Na grade de horários, cada sessão aparece na linha do seu horário; sessões sem horário ficam numa linha "Sem horário" no topo; sessões no mesmo horário aparecem todas, empilhadas. Sessão não tem duração: ocupa uma linha de 30 minutos.
+- Clicar no número do dia (Mês) ou no título do dia (Semana e agenda) abre a visão Dia daquela data.
+- Realizada aparece com ícone de check; Cancelada, riscada. Período sem sessões mostra mensagem.
+- **Prévia:** clicar numa sessão abre uma prévia rápida (popover) com paciente, dia e horário, status e cobrança, e o botão "Editar", que abre o mesmo Dialog de edição da aba Sessões (RF-12). Esc ou clicar fora fecha a prévia sem abrir nada. Ao salvar a edição, o calendário atualiza.
+- **Criar sessão no calendário:** clicar num horário vazio (Semana e Dia) abre o Dialog de nova sessão com data e horário preenchidos; clicar num dia vazio do Mês abre com a data (sem horário); o botão "Nova sessão" no topo abre com a data de hoje. Nos três casos o Dialog tem, no topo, o campo "Paciente" (busca pelo nome, sem diferenciar maiúsculas/acentos; só pacientes ativos do tenant), obrigatório. O restante do Dialog é o dos RF-12, RF-14 e RF-15.
+- Não arrasta sessões para reagendar (fora do escopo); reagendar é editar a data e o horário no Dialog.
 
 **Aceite**
-- [ ] Mostra só sessões do tenant logado e só de pacientes ativos.
-- [ ] Trocar de mês troca as sessões exibidas; "Hoje" volta ao mês atual.
-- [ ] Clicar numa sessão abre o mesmo formulário da aba Sessões; mudar a data move a sessão para o novo dia, e mudar o status é refletido.
-- [ ] Abaixo de `md` aparece a agenda por dia; a partir de `md`, a grade mensal; sem overflow horizontal.
+- [ ] Mostra só sessões do tenant logado e só de pacientes ativos, em todas as visões.
+- [ ] O seletor troca entre Mês, Semana e Dia; anterior/próximo andam um mês, uma semana ou um dia; "Hoje" volta a hoje; recarregar a página mantém visão e data.
+- [ ] Semana e Dia mostram cada sessão no dia e na linha de horário certos; sessão sem horário aparece em "Sem horário"; duas sessões no mesmo horário aparecem ambas.
+- [ ] Clicar numa sessão abre a prévia com paciente, dia/horário, status e cobrança; "Editar" abre o mesmo formulário da aba Sessões; Esc fecha a prévia sem alterar nada.
+- [ ] Clicar num horário vazio abre "Nova sessão" com data e horário preenchidos e o campo Paciente no topo; salvar cria a sessão, que aparece no calendário e na aba Sessões do paciente.
+- [ ] Clicar num dia vazio (Mês) e o botão "Nova sessão" também abrem o formulário de criação.
+- [ ] A busca de paciente ignora maiúsculas/acentos e lista só pacientes ativos do tenant (arquivados e de outro tenant não aparecem); sem paciente escolhido não salva.
+- [ ] Abaixo de `md`, Mês e Semana viram agenda; Dia continua em grade de horários; sem overflow horizontal em nenhuma visão.
 
 ### RF-14 Tipo de cobrança da sessão
 - Cada sessão tem "Cobrança": **Particular** (padrão) ou **Convênio**.
@@ -203,7 +215,7 @@ Fonoaudióloga | CRFa <registro>
 - **Idioma/formatos:** pt-BR, datas `dd/mm/aaaa`, moeda BRL.
 - **Persistência do mock:** `localStorage`, para os dados sobreviverem ao recarregar; anexos em IndexedDB, porque `localStorage` não guarda arquivo binário de forma confiável (`plan.md` §12).
 - **Privacidade:** dados fictícios nos mocks; CPF mascarado em listagens e no cabeçalho. Anexos ficam só no navegador, sem criptografia; não anexar documentos reais durante a Fase 1.
-- **Responsivo, mobile first:** layout desenhado para celular primeiro e adaptado para cima (tablet, desktop). Em telas estreitas, a tabela de pacientes vira lista de cartões, o calendário vira agenda por dia, as abas do perfil ficam roláveis, e formulários e os Dialogs de cadastro e de sessão ocupam a largura da tela. Navegação por teclado nos formulários.
+- **Responsivo, mobile first:** layout desenhado para celular primeiro e adaptado para cima (tablet, desktop). Em telas estreitas, a tabela de pacientes vira lista de cartões, no calendário, mês e semana viram agenda por dia (o dia continua em grade de horários), as abas do perfil ficam roláveis, e formulários e os Dialogs de cadastro e de sessão ocupam a largura da tela. Navegação por teclado nos formulários.
 - **Impressão:** estilos `@media print` dedicados (independem do layout responsivo, seguem o formato A4 fixo).
 
 ## 5. Suposições a confirmar
@@ -215,6 +227,9 @@ Fonoaudióloga | CRFa <registro>
 6. Arquivar esconde o paciente da lista padrão e do calendário; nada é apagado e o perfil segue editável.
 7. Anexos aceitam só `.pdf` e `.docx` (não o `.doc` antigo), até 10 MB cada.
 8. Sessões e lançamentos são independentes: o nº de sessões do lançamento (RF-08) continua digitado, sem ser calculado a partir das sessões registradas.
+9. Sessão não tem duração: nas grades de horário ocupa uma linha de 30 minutos, e duas sessões no mesmo horário são permitidas (sem alerta de conflito).
+10. No calendário a semana vai de domingo a sábado e a visão padrão é Mês.
+11. Reagendar é editar a sessão (data e horário no Dialog); arrastar e soltar fica para depois.
 
 ---
 

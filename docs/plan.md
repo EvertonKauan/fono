@@ -50,7 +50,7 @@ src/
     patients/      PatientsPage.tsx  NewPatientDialog.tsx
     patient/       PatientProfile.tsx  PatientHeader.tsx
       tabs/        DadosTab  AnamneseTab  SessoesTab  PrescricoesTab  FinanceiroTab  RelatorioTab
-    calendar/      CalendarPage.tsx  MonthGrid.tsx  AgendaList.tsx
+    calendar/      CalendarPage.tsx  MonthGrid.tsx  TimeGrid.tsx  AgendaList.tsx  SessionPreview.tsx
   components/      PrintSheet.tsx  PaymentChip.tsx  CpfField.tsx  MoneyField.tsx  AppLayout.tsx
                    SessionDialog.tsx  AttachmentsField.tsx
   utils/           cpf.ts  age.ts  format.ts  files.ts  calendar.ts  id.ts
@@ -86,7 +86,7 @@ fono/
 | `/login` | Login |
 | `/pacientes` | Lista (protegida) |
 | `/pacientes/:id` | Perfil; aba pela query `?aba=dados\|anamnese\|sessoes\|prescricoes\|financeiro\|relatorio` |
-| `/calendario` | Calendário de sessões (protegida); mês pela query `?mes=yyyy-mm` (padrão: mês atual) |
+| `/calendario` | Calendário de sessões (protegida); visão e data pela query `?visao=mes\|semana\|dia&data=yyyy-mm-dd` (padrão: mês, hoje) |
 
 ## 5. Modelo de dados (`types/domain.ts`)
 ```ts
@@ -172,9 +172,14 @@ type Attachment = {
 - **Arquivar (RF-11):** botão "Arquivar paciente" no `PatientHeader`, com Dialog de confirmação (explica que nada é apagado); arquivado mostra chip "Arquivado" e o botão vira "Desarquivar paciente" (sem confirmação). Lista: filtro "Situação" (Ativos · Arquivados · Todos), padrão Ativos; `filterPatients` recebe a situação. Só com o filtro "Arquivados" a linha (DataGrid, coluna extra "Ações") e o cartão ganham o botão "Desarquivar"; ele fica fora do link do cartão, para não abrir o perfil, e recarrega a lista. Arquivar não muda nenhum outro dado.
 - **Sessões (RF-12, RF-14):** `SessoesTab` lista as sessões do paciente (mais recente primeiro) em `Paper` com linhas, como as prescrições; nova sessão sugere `visit.time` do paciente. `SessionDialog` (em `components/`, pois é compartilhado com o calendário) tem data, horário, status, cobrança (Particular/Convênio; o campo do convênio só existe no formulário quando Convênio, e é descartado ao salvar como Particular), evolução (multilinha) e a área de anexos. Salvar não toca em `payments`.
 - **Calendário (RF-13):** rota própria com `AppLayout` ganhando navegação **Pacientes · Calendário** (links no topo; abaixo de `sm` segunda linha do `AppBar`). A altura da barra passa a ser uma variável CSS (`--app-bar-height`) definida no `AppLayout`; o cabeçalho fixo do perfil usa `top: var(--app-bar-height)` no lugar da constante `APP_BAR_HEIGHT`, que deixa de existir.
-  - Dados: `listSessionsBetween` do intervalo visível + `listPatients`; sessões de pacientes arquivados são filtradas fora.
-  - A partir de `md`, `MonthGrid`: grade de 7 colunas montada por `utils/calendar.ts` (`buildMonthGrid`), semanas de domingo a sábado, com dias vizinhos esmaecidos; cada sessão é um botão "HH:mm Nome" (sem horário: "Sem horário", no fim do dia). Abaixo de `md`, `AgendaList`: só dias com sessão, agrupados sob um título de dia. Ambos abrem o `SessionDialog`, que ao salvar recarrega o mês.
-  - Navegação de mês por `IconButton` (`ChevronLeft`/`ChevronRight`) + botão "Hoje", sincronizada com `?mes=`; sessões não são criadas pelo calendário.
+  - **Visões e URL:** `?visao=mes|semana|dia&data=yyyy-mm-dd` (padrão: mês, hoje; valor inválido cai no padrão). O seletor Mês/Semana/Dia é um `ToggleButtonGroup` exclusivo; anterior/próximo (`ChevronLeft`/`ChevronRight`) andam um mês, uma semana ou um dia; "Hoje" volta a hoje mantendo a visão. `utils/calendar.ts` ganha `weekOf`, `viewRange` (intervalo a buscar por visão), `shiftDate`, `rangeLabel` e os helpers das fatias de horário; o `?mes=` da versão anterior deixa de existir.
+  - **Dados:** `listSessionsBetween` do intervalo da visão + `listPatients`; `toCalendarItems` continua filtrando arquivados e tenant.
+  - **Mês:** a partir de `md`, `MonthGrid` (grade de 7 colunas de `buildMonthGrid`, dias vizinhos esmaecidos; cada sessão é um botão "HH:mm Nome"); abaixo de `md`, `AgendaList` (só dias com sessão, título por dia).
+  - **Semana e Dia (`TimeGrid`):** tabela cujas linhas são fatias de 30 minutos e cujas colunas são os dias (7 na semana, 1 no dia). A faixa padrão é 07:00–21:00 e se estende para conter qualquer sessão exibida; a primeira linha é "Sem horário". O modelo não tem duração: a sessão ocupa a fatia do seu horário (arredondado para baixo aos 30 minutos; o texto mostra o horário exato) e sessões na mesma fatia ficam empilhadas na célula, sem algoritmo de sobreposição. A Semana só é grade a partir de `md`; abaixo de `md` usa `AgendaList` (dias da semana com sessão). O Dia é grade em todas as larguras.
+  - **Ir ao dia:** o número do dia (Mês) e o título do dia (Semana e agenda) são botões que abrem a visão Dia daquela data.
+  - **Prévia (`SessionPreview`):** clicar numa sessão abre um `Popover` ancorado no elemento clicado, em todas as visões, com paciente, dia e horário, `SessionStatusLabel` e cobrança (`billingLabel`), e o botão "Editar", que fecha a prévia e abre o `SessionDialog` de edição. Foco e Esc vêm do próprio `Popover` (Modal do MUI).
+  - **Criar (`SessionDialog` em modo "escolher paciente"):** além do modo com paciente fixo (aba Sessões), o Dialog aceita `initialDate` e `initialTime` e, ao criar pelo calendário, mostra no topo um `Autocomplete` do MUI "Paciente", obrigatório. As opções são os pacientes ativos do tenant (`listPatients` sem `archivedAt`), filtrados por `filterPatients` (sem acento nem diferença de maiúsculas); sem opções mostra "Nenhum paciente ativo." e sem paciente escolhido não salva. Se o clique não trouxe horário, ao escolher o paciente o Dialog sugere o `visit.time` dele, só enquanto o usuário não digitou um horário. Pontos de entrada: célula vazia do `TimeGrid` (data e horário), dia vazio do `MonthGrid` (só a data) e o botão "Nova sessão" no topo (data de hoje; serve também para a agenda abaixo de `md`). As células vazias são alvos de clique e toque fora da ordem de tabulação; o botão "Nova sessão" é a via por teclado.
+  - **Sem arrastar:** não há arrastar e soltar para reagendar (fora do escopo); reagendar é editar data e horário no Dialog. A aparência continua a do tema (bordas em vez de sombras, sem cor nova).
 - **Anexos (RF-15):** `AttachmentsField` recebe o dono (`anamnese` + `patientId`, ou `sessao` + id da sessão) e mantém adições e remoções em memória; quem hospeda (Salvar da anamnese, Salvar do `SessionDialog`) aplica no `attachments.ts` depois de gravar o registro. Botão "Anexar arquivo" (`<input type="file" accept=".pdf,.docx">` oculto), lista com nome, tamanho (`utils/files.ts`) e data, "Baixar" e "Remover", e o aviso de armazenamento local (§12) como texto de ajuda.
 
 ## 8. Impressão
@@ -187,11 +192,12 @@ type Attachment = {
 - 2 tenants: `claudionaria` (usuário `clau` / senha `123`) e `demo` (usuário `demo` / `123`), só para validar o isolamento (RF-10).
 - Tenant `claudionaria`: ~8 pacientes fictícios (mistura de crianças e adultos), ao menos 3 com lançamento pendente, 1 anamnese preenchida, 1 prescrição.
 - **Sessões:** o tenant `claudionaria` ganha sessões distribuídas por vários pacientes, com histórico e próximas (setembro de 2026, mês do mock), cobrindo os três status, ao menos uma sessão de convênio (nome fictício) e evoluções preenchidas; 1 paciente arquivado, para exercitar o filtro "Situação". O tenant `demo` ganha 1 ou 2 sessões, para validar o isolamento (RF-10). Sem anexos no seed (arquivos vêm do uso).
+- Para exercitar o empilhamento do calendário, o seed ganha um horário compartilhado por dois pacientes no mesmo dia (só vale para bancos novos; a migração não reescreve dados existentes).
 - CPFs fictícios, porém válidos no cálculo dos dígitos.
 
 ## 10. Testes (mínimo)
 - Unitários (Vitest) para `cpf.ts`, `age.ts` e filtro de perguntas por público da anamnese.
-- Também unitários, por serem regras de negócio dos novos RFs: `filterPatients` com a situação (arquivados), `utils/files.ts` (só `.pdf`/`.docx`, limite de 10 MB), `utils/calendar.ts` (`buildMonthGrid`, agrupamento por dia), a migração de `db.ts` (tabela ausente preenchida sem tocar nas existentes) e o service de anexos com `fake-indexeddb` (isolamento por tenant, adicionar, listar, baixar, remover).
+- Também unitários, por serem regras de negócio dos novos RFs: `filterPatients` com a situação (arquivados), `utils/files.ts` (só `.pdf`/`.docx`, limite de 10 MB), `utils/calendar.ts` (`buildMonthGrid`, agrupamento por dia), as visões do calendário (`weekOf`, `viewRange`, `shiftDate`, fatias de horário e a faixa de horas do `TimeGrid`), a migração de `db.ts` (tabela ausente preenchida sem tocar nas existentes) e o service de anexos com `fake-indexeddb` (isolamento por tenant, adicionar, listar, baixar, remover).
 - Verificação manual dos critérios de aceite da spec por tarefa.
 
 ## 11. Skill `frontend-design`
