@@ -30,7 +30,7 @@ export default function PatientHeader({ patient, pending, onToggleArchive }: Pro
         <IconButton component={RouterLink} to="/pacientes" edge="start" aria-label="Voltar para a lista de pacientes">
           <ArrowBack />
         </IconButton>
-        <Typography variant="h3" component="h1" sx={{ flexGrow: 1, minWidth: 0 }}>
+        <Typography variant="h3" component="h1" sx={{ flexGrow: 1, minWidth: 0, overflowWrap: 'anywhere' }}>
           {patient.fullName}
         </Typography>
         <PaymentChip pending={pending} />

@@ -24,7 +24,7 @@ export default function PatientCards({ rows, onUnarchive }: Props) {
           <Card>
             <CardActionArea component={RouterLink} to={`/pacientes/${row.id}`} sx={{ p: 2 }}>
               <Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={1}>
-                <Typography variant="h6" component="h2">
+                <Typography variant="h6" component="h2" sx={{ minWidth: 0, overflowWrap: 'anywhere' }}>
                   {row.fullName}
                 </Typography>
                 <Stack direction="row" gap={0.5} flexShrink={0}>

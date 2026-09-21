@@ -89,7 +89,7 @@ export default function FinanceiroTab({ patient, payments, onPaymentsChange }: P
             <Typography variant="body2" color="text.secondary">
               Pendente em {year}
             </Typography>
-            <Typography variant="h4" component="p" color={summary.pending > 0 ? 'error' : 'text.primary'}>
+            <Typography variant="h4" component="p" color={summary.pending > 0 ? 'error' : 'text.primary'} sx={{ overflowWrap: 'anywhere' }}>
               {formatCurrency(summary.pending)}
             </Typography>
           </Paper>
@@ -97,7 +97,7 @@ export default function FinanceiroTab({ patient, payments, onPaymentsChange }: P
             <Typography variant="body2" color="text.secondary">
               Pago em {year}
             </Typography>
-            <Typography variant="h4" component="p">
+            <Typography variant="h4" component="p" sx={{ overflowWrap: 'anywhere' }}>
               {formatCurrency(summary.paid)}
             </Typography>
           </Paper>
