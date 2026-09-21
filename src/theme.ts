@@ -3,6 +3,7 @@ import { ptBR as corePtBR } from '@mui/material/locale'
 import { ptBR as gridPtBR } from '@mui/x-data-grid/locales'
 import { ptBR as pickersPtBR } from '@mui/x-date-pickers/locales'
 import type {} from '@mui/x-data-grid/themeAugmentation'
+import type {} from '@mui/x-date-pickers/themeAugmentation'
 
 const colors = {
   primary: { main: '#4F7F73', light: '#7FA89B', dark: '#3A5F55' },
@@ -91,6 +92,9 @@ export const theme = createTheme(
       MuiTextField: { defaultProps: { size: 'small' } },
       // Campo com fundo próprio: sem isso ele herda a cor do que está atrás (bege na página, branco no diálogo).
       MuiOutlinedInput: {
+        styleOverrides: { root: ({ theme }) => ({ backgroundColor: theme.palette.background.paper }) },
+      },
+      MuiPickersOutlinedInput: {
         styleOverrides: { root: ({ theme }) => ({ backgroundColor: theme.palette.background.paper }) },
       },
       MuiDataGrid: {
